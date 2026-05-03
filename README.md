@@ -22,7 +22,7 @@ get it running before your tea gets cold.
 
 1. **deps:** `pip install -r requirements.txt`
 2. **test data:** `python testdata.py` (creates the 'National General Elections 2025')
-3. **default login:** `shivansh@vote.com` // `shivansh`
+3. **default login:** `ansh@vote.com` // `ansh`
 4. **run:** `python manage.py runserver`
 
 ## who can do what?

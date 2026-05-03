@@ -96,7 +96,7 @@ def populate():
 
     # 6. Create Test Voters
     voter_list = [
-        ('shivansh@vote.com', 'shivansh', 'Shivansh', ''),
+        ('ansh@vote.com', 'ansh', 'Ansh', ''),
         ('voter1@example.com', 'voter123', 'Voter1', 'Test'),
         ('voter2@example.com', 'voter123', 'Voter2', 'Test'),
         ('voter3@example.com', 'voter123', 'Voter3', 'Test'),
