@@ -24,8 +24,10 @@ get it running before your tea gets cold.
 
 1. **deps:** `pip install -r requirements.txt`
 2. **test data:** `python testdata.py` (creates the 'National General Elections 2025')
-3. **default login:** `ansh@vote.com` // `ansh`
+3. **default login:** `ansh@vote.com` // `ansh` (Change this in production using environment variables)
 4. **run:** `python manage.py runserver`
+
+> **Note on Security:** For production, set `ADMIN_EMAIL` and `ADMIN_PASSWORD` as environment variables to override the default public credentials.
 
 ## who can do what?
 - **admin:** create elections, manage candidates, and hit the 'conclude' button when it's over. generate pdfs when you're done.

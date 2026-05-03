@@ -36,15 +36,18 @@ def populate():
     # 3. Create Parties (Idempotent)
     parties_to_create = [
         ('BJP', 'parties/bjp.png'),
-        ('INC', 'parties/inc.png'),
+        ('INC', 'parties/inc.webp'),
         ('AAP', 'parties/aap.png'),
     ]
     
     party_objs = {}
     for name, logo in parties_to_create:
-        p, _ = Party.objects.get_or_create(name=name, defaults={'logo': logo})
+        p, created = Party.objects.get_or_create(name=name, defaults={'logo': logo})
+        if not created:
+            p.logo = logo
+            p.save()
         party_objs[name] = p
-    print("Parties verified: BJP, INC, AAP")
+    print("Parties verified and logos updated: BJP, INC, AAP")
 
     # 4. Party Mappings (Manual Mapping for Accuracy)
     party_map = {
@@ -95,28 +98,52 @@ def populate():
                 print(f"Updated Candidate ({label}): {name} [{party_acronym}]")
 
     # 6. Create Test Voters
+    # Admin credentials from environment or defaults
+    admin_email = os.getenv('ADMIN_EMAIL', 'ansh@vote.com')
+    admin_password = os.getenv('ADMIN_PASSWORD', 'ansh')
+
     voter_list = [
-        ('ansh@vote.com', 'ansh', 'Ansh', ''),
+        (admin_email, admin_password, 'Ansh', 'Admin'),
         ('voter1@example.com', 'voter123', 'Voter1', 'Test'),
         ('voter2@example.com', 'voter123', 'Voter2', 'Test'),
         ('voter3@example.com', 'voter123', 'Voter3', 'Test'),
         ('voter4@example.com', 'voter123', 'Voter4', 'Test'),
     ]
 
-    for email, password, fname, lname in voter_list:
+    for i, (email, password, fname, lname) in enumerate(voter_list):
         if not Voter.objects.filter(email=email).exists():
-            Voter.objects.create_user(
-                email=email,
-                password=password,
-                first_name=fname,
-                last_name=lname,
-                date_of_birth=date(1990, 1, 1),
-                gender='Male',
-                phone='9876543210'
-            )
-            print(f"Created Voter: {email}")
+            if i == 0: # Make the first user (Ansh) a superuser
+                Voter.objects.create_superuser(
+                    email=email,
+                    password=password,
+                    first_name=fname,
+                    last_name=lname,
+                    date_of_birth=date(1990, 1, 1),
+                    gender='Male',
+                    phone='9876543210'
+                )
+                print(f"Created Admin Superuser: {email}")
+            else:
+                Voter.objects.create_user(
+                    email=email,
+                    password=password,
+                    first_name=fname,
+                    last_name=lname,
+                    date_of_birth=date(1990, 1, 1),
+                    gender='Male',
+                    phone='9876543210'
+                )
+                print(f"Created Voter: {email}")
         else:
-            print(f"Voter already exists: {email}")
+            if i == 0: # Ensure Ansh is a superuser and reset password if needed
+                v = Voter.objects.get(email=email)
+                v.is_staff = True
+                v.is_superuser = True
+                v.set_password(password) # Update to the secret password
+                v.save()
+                print(f"Verified/Updated Admin: {email}")
+            else:
+                print(f"Voter already exists: {email}")
 
     print("\nPopulation complete! All candidates are now mapped to their correct parties.")
 
