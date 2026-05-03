@@ -1,5 +1,7 @@
 # votesecure 🗳️
 
+**[🌐 View Live Demo](https://anshdhariwal.pythonanywhere.com/)**
+
 > **working implementation.** a fully-featured election lifecycle platform with secure dashboards, voter registration, and eci-grade audit reports. 
 
 India votes. Democracy secured. **votesecure** is a dead-simple, high-end platform for managing the entire election lifecycle — from registration to the final tally.
