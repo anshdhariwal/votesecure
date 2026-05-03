@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Election Report — {{ election.title }}</title>
+<style>
+    @page {
+        size: a4 portrait;
+        margin: 2cm;
+        @frame footer {
+            -pdf-frame-content: footerContent;
+            bottom: 1cm;
+            margin-left: 2cm;
+            margin-right: 2cm;
+            height: 1cm;
+        }
+    }
+    body { font-family: 'Helvetica', sans-serif; font-size: 11px; color: #2C3E50; line-height: 1.5; }
+    
+    .header-box { background-color: #1A252F; color: #ffffff; padding: 25px; text-align: center; border-bottom: 5px solid #E67E22; margin-bottom: 30px; border-radius: 4px; }
+    .header-box h1 { font-size: 26px; margin: 0; padding: 0; color: #ffffff; text-transform: uppercase; letter-spacing: 2px; }
+    .header-box p { margin: 5px 0 0 0; font-size: 13px; color: #BDC3C7; }
+    
+    .meta-data { margin-bottom: 30px; text-align: center; font-size: 12px; color: #7F8C8D; }
+    
+    .stats-table { width: 100%; margin-bottom: 40px; border-collapse: collapse; }
+    .stats-table td { width: 25%; text-align: center; padding: 15px; border: 1px solid #ECF0F1; background-color: #F8F9FA; }
+    .stat-val { font-size: 22px; font-weight: bold; color: #2980B9; display: block; margin-bottom: 5px; }
+    .stat-lbl { font-size: 10px; color: #7F8C8D; text-transform: uppercase; letter-spacing: 1px; }
+
+    h2.position-title { font-size: 18px; color: #2C3E50; margin-top: 30px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #E67E22; }
+    
+    table.results-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    table.results-table th { background-color: #34495E; color: white; padding: 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; border: 1px solid #34495E; }
+    table.results-table td { padding: 10px; border: 1px solid #ECF0F1; vertical-align: middle; }
+    table.results-table tr:nth-child(even) td { background-color: #FDFDFE; }
+    table.results-table tr.winner td { background-color: #E8F8F5; }
+    
+    .winner-name { font-weight: bold; color: #27AE60; font-size: 12px; }
+    .badge { background-color: #27AE60; color: white; padding: 3px 6px; font-size: 9px; border-radius: 3px; font-weight: bold; }
+    
+    .bar-container { width: 100px; height: 10px; background-color: #ECF0F1; border-radius: 5px; display: inline-block; overflow: hidden; margin-top: 3px; }
+    .bar-fill { height: 100%; background-color: #2980B9; }
+    .winner .bar-fill { background-color: #27AE60; }
+    
+    #footerContent { text-align: center; font-size: 9px; color: #95A5A6; border-top: 1px solid #ECF0F1; padding-top: 10px; }
+</style>
+</head>
+<body>
+
+<div class="header-box">
+    <h1>{{ election.title }}</h1>
+    <p>ELECTION RESULTS REPORT (SIMULATED)</p>
+    <p style="font-size: 10px; color: #ffb4ab; margin-top: 10px; font-weight: bold; border: 1px solid #ffb4ab; padding: 4px; display: inline-block;">⚠️ DEMO PURPOSES ONLY: THIS IS NOT A REAL ELECTION ⚠️</p>
+</div>
+
+<div class="meta-data">
+    <strong>Voting Period:</strong> {{ election.start_date|date:"d M Y" }} to {{ election.end_date|date:"d M Y" }}<br>
+    <strong>Report Generated:</strong> {{ generated_at|date:"d M Y, H:i" }} IST
+</div>
+
+<table class="stats-table">
+    <tr>
+        <td>
+            <span class="stat-val">{{ total_votes_cast }}</span><br>
+            <span class="stat-lbl">Total Votes Cast</span>
+        </td>
+        <td>
+            <span class="stat-val">{{ total_eligible }}</span><br>
+            <span class="stat-lbl">Eligible Voters</span>
+        </td>
+        <td>
+            <span class="stat-val">{{ turnout }}%</span><br>
+            <span class="stat-lbl">Voter Turnout</span>
+        </td>
+        <td>
+            <span class="stat-val">{{ positions|length }}</span><br>
+            <span class="stat-lbl">Positions</span>
+        </td>
+    </tr>
+</table>
+
+{% for pos_data in positions %}
+<h2 class="position-title">{{ pos_data.position.title }}</h2>
+<table class="results-table">
+    <thead>
+        <tr>
+            <th style="width: 8%; text-align: center;">Rank</th>
+            <th style="width: 30%;">Candidate</th>
+            <th style="width: 20%;">Affiliation</th>
+            <th style="width: 12%; text-align: right;">Votes</th>
+            <th style="width: 20%;">Vote Share</th>
+            <th style="width: 10%; text-align: center;">Result</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in pos_data.ranked_candidates %}
+        <tr class="{% if entry.rank == 1 %}winner{% endif %}">
+            <td style="text-align: center; font-weight: bold; color: {% if entry.rank == 1 %}#27AE60{% else %}#7F8C8D{% endif %};">{{ entry.rank }}</td>
+            <td>
+                <span class="{% if entry.rank == 1 %}winner-name{% endif %}">{{ entry.candidate.full_name }}</span>
+            </td>
+            <td style="color: #7F8C8D; font-size: 10px;">{{ entry.candidate.affiliation|default:"Independent" }}</td>
+            <td style="text-align: right; font-weight: bold;">{{ entry.vote_count }}</td>
+            <td>
+                <div style="font-size: 10px; margin-bottom: 2px;">{{ entry.percentage }}%</div>
+                <div class="bar-container">
+                    <div class="bar-fill" style="width: {{ entry.percentage }}%;"></div>
+                </div>
+            </td>
+            <td style="text-align: center;">
+                {% if entry.rank == 1 %}
+                <span class="badge">ELECTED</span>
+                {% else %}
+                <span style="color: #BDC3C7;">—</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endfor %}
+
+<div id="footerContent">
+    VoteSecure India &bull; System for Demo &bull; Dev @anshdhariwal &bull; github.com/anshdhariwal &bull; Page <pdf:pagenumber> of <pdf:pagecount>
+</div>
+
+</body>
+</html>

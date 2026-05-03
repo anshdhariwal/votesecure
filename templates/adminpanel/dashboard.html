@@ -1,0 +1,193 @@
+{% extends "adminpanel/base_admin.html" %}
+{% block title %}Admin Dashboard — VoteSecure India{% endblock %}
+
+{% block admin_content %}
+<header class="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-surface-container-high px-gutter py-6">
+<h1 class="font-display-lg text-display-lg text-on-surface">Dashboard</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Election monitoring and system overview.</p>
+</header>
+
+<div class="p-gutter space-y-8 max-w-[1400px] mx-auto w-full">
+<!-- Stats Grid -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="bg-[#252320] rounded p-6 border border-[#faf9f5]/10">
+        <span class="material-symbols-outlined text-primary mb-2">people</span>
+        <p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Registered Voters</p>
+        <p class="font-display-lg text-display-lg text-on-background mt-2">{{ total_voters }}</p>
+    </div>
+    <div class="bg-[#252320] rounded p-6 border border-[#faf9f5]/10">
+        <span class="material-symbols-outlined text-primary mb-2">how_to_vote</span>
+        <p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Total Votes</p>
+        <p class="font-display-lg text-display-lg text-on-background mt-2">{{ total_votes }}</p>
+    </div>
+    <div class="bg-[#252320] rounded p-6 border border-[#faf9f5]/10">
+        <span class="material-symbols-outlined text-primary mb-2">today</span>
+        <p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Votes Today</p>
+        <p class="font-display-lg text-display-lg text-on-background mt-2">{{ votes_today }}</p>
+    </div>
+    <div class="bg-[#252320] rounded p-6 border border-[#faf9f5]/10">
+        <span class="material-symbols-outlined text-primary mb-2">event</span>
+        <p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Active Elections</p>
+        <p class="font-display-lg text-display-lg text-on-background mt-2">{{ active_elections_count }}</p>
+    </div>
+</div>
+
+<!-- Elections Table -->
+<div class="bg-[#252320] rounded p-card-padding border border-[#faf9f5]/10">
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h3 class="font-body-lg text-body-lg text-on-background font-semibold">All Elections</h3>
+        <p class="font-body-md text-body-md text-on-surface-variant mt-1">Overview of all electoral events.</p>
+    </div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-surface-container-high">
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Election</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Schedule</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Positions</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Votes</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Status</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-background divide-y divide-surface-container-high">
+{% for election in all_elections %}
+<tr class="hover:bg-surface-container/50 transition-colors">
+<td class="py-5 px-4 font-semibold">{{ election.title }}</td>
+<td class="py-5 px-4 text-on-surface-variant">{{ election.start_date|date:"d M" }} — {{ election.end_date|date:"d M Y" }}</td>
+<td class="py-5 px-4">
+    <span class="inline-flex items-center justify-center bg-surface-container-high text-on-background rounded-full px-2 py-1 text-[10px] font-label-caps border border-surface-variant">
+        {{ election.positions.count }} Positions
+    </span>
+</td>
+<td class="py-5 px-4 text-on-surface-variant">{{ election.votes.count }}</td>
+<td class="py-5 px-4">
+    {% if election.status == 'active' %}
+    <span class="inline-flex items-center gap-1.5 text-primary">
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> Active
+    </span>
+    {% elif election.status == 'upcoming' %}
+    <span class="inline-flex items-center gap-1.5 text-secondary">
+        <span class="w-2 h-2 rounded-full bg-secondary"></span> Scheduled
+    </span>
+    {% else %}
+    <span class="inline-flex items-center gap-1.5 text-on-surface-variant">
+        <span class="w-2 h-2 rounded-full bg-on-surface-variant"></span> Concluded
+    </span>
+    {% endif %}
+</td>
+</tr>
+{% empty %}
+<tr><td colspan="5" class="py-8 text-center text-on-surface-variant">No elections created yet.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- Recent Activity -->
+<div class="bg-[#252320] rounded p-card-padding border border-[#faf9f5]/10">
+<h3 class="font-body-lg text-body-lg text-on-background font-semibold mb-6">Recent Vote Activity</h3>
+<div class="space-y-3 max-h-[400px] overflow-y-auto">
+    {% for vote in recent_votes %}
+    <div class="flex items-center gap-3 py-3 border-b border-surface-container-high/50 last:border-0">
+        <div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-on-surface-variant text-[16px]">person</span>
+        </div>
+        <div class="flex-1 text-sm">
+            <span class="text-on-surface">{{ vote.voter.email }}</span>
+            <span class="text-on-surface-variant"> voted for </span>
+            <span class="text-primary">{{ vote.candidate.full_name }}</span>
+            <span class="text-on-surface-variant"> ({{ vote.position.title }})</span>
+        </div>
+        <span class="text-on-surface-variant text-xs shrink-0">{{ vote.cast_at|timesince }} ago</span>
+    </div>
+    {% empty %}
+    <p class="text-on-surface-variant text-center py-4">No votes cast yet.</p>
+    {% endfor %}
+</div>
+</div>
+
+<!-- Danger Zone -->
+<div class="bg-error-container/10 rounded p-card-padding border border-error/20 mt-8">
+    <div class="flex items-start justify-between">
+        <div>
+            <h3 class="font-body-lg text-body-lg text-error font-semibold mb-2 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">warning</span>
+                Danger Zone
+            </h3>
+            <p class="font-body-md text-sm text-on-surface-variant max-w-2xl">
+                Wiping the database will permanently delete all elections, candidates, votes, and registered voters. This action cannot be undone. Admin accounts will be preserved.
+            </p>
+        </div>
+        <button onclick="openWipeModal()" class="bg-error hover:bg-error/80 text-on-error font-label-caps uppercase tracking-widest px-6 py-2.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 shrink-0">
+            <span class="material-symbols-outlined text-[18px]">delete_forever</span>
+            Wipe Database
+        </button>
+    </div>
+</div>
+
+</div>
+
+<!-- Wipe Database Confirmation Modal -->
+<div id="wipeModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeWipeModal()"></div>
+    <div class="relative bg-surface-container-high border border-surface-container-highest rounded-2xl w-full max-w-md p-6 shadow-2xl">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 rounded-full bg-error-container text-on-error-container flex items-center justify-center mx-auto mb-4">
+                <span class="material-symbols-outlined text-3xl">warning</span>
+            </div>
+            <h3 class="font-display-md text-2xl text-on-surface mb-2">Are you absolutely sure?</h3>
+            <p class="font-body-md text-on-surface-variant text-sm mb-4">
+                This will wipe the entire database, including all elections, votes, and users (except admins). This action is permanent and cannot be reversed.
+            </p>
+            <div class="bg-surface-container px-4 py-3 rounded-lg border border-surface-container-highest mb-4 text-left">
+                <p class="text-xs text-on-surface-variant mb-2 font-label-caps uppercase tracking-wider">Type <span class="text-error font-bold italic">WIPE ALL DATA</span> to confirm:</p>
+                <input type="text" id="wipe-confirm-input" oninput="checkWipeConfirm()" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-2.5 font-body-md text-sm focus:border-error focus:ring-0 outline-none" placeholder="Enter confirmation text">
+            </div>
+        </div>
+        
+        <form method="POST" action="{% url 'wipe_database' %}" class="flex gap-3">
+            {% csrf_token %}
+            <button type="button" onclick="closeWipeModal()" class="flex-1 px-4 py-2.5 rounded-full border border-outline-variant text-on-surface hover:bg-surface-container-highest transition-colors font-semibold text-sm">
+                Cancel
+            </button>
+            <button type="submit" id="wipe-submit-btn" disabled class="flex-1 px-4 py-2.5 rounded-full bg-error text-on-error opacity-50 cursor-not-allowed transition-all font-semibold text-sm flex items-center justify-center gap-2">
+                Yes, Wipe It All
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in-up { animation: fadeInUp 0.2s ease-out forwards; }
+</style>
+
+<script>
+    function openWipeModal() {
+        document.getElementById('wipe-confirm-input').value = '';
+        document.getElementById('wipe-submit-btn').disabled = true;
+        document.getElementById('wipe-submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
+        document.getElementById('wipeModal').classList.remove('hidden');
+    }
+    
+    function closeWipeModal() {
+        document.getElementById('wipeModal').classList.add('hidden');
+    }
+
+    function checkWipeConfirm() {
+        const input = document.getElementById('wipe-confirm-input').value;
+        const btn = document.getElementById('wipe-submit-btn');
+        if (input === 'WIPE ALL DATA') {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
+</script>
+
+{% endblock %}

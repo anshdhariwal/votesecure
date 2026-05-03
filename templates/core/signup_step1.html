@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Register — Personal Details | VoteSecure India{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-background px-4 py-12">
+<div class="w-full max-w-lg">
+<!-- Logo -->
+<div class="text-center mb-10">
+<a href="{% url 'homepage' %}" class="text-3xl font-serif font-bold text-on-surface tracking-tight">VoteSecure</a>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-2 uppercase tracking-widest">Voter Registration</p>
+</div>
+
+<!-- Step Indicator -->
+<div class="flex items-center justify-center gap-4 mb-10">
+<div class="flex items-center gap-2">
+    <div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center text-sm font-semibold">1</div>
+    <span class="font-label-caps text-label-caps text-primary uppercase tracking-widest">Personal Details</span>
+</div>
+<div class="w-12 h-[2px] bg-surface-container-highest"></div>
+<div class="flex items-center gap-2">
+    <div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center text-sm">2</div>
+    <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Set Password</span>
+</div>
+</div>
+
+<!-- Form Card -->
+<div class="bg-surface-container rounded-3xl p-card-padding border border-outline-variant/30 shadow-2xl shadow-black/50 relative">
+<a href="{% url 'homepage' %}" class="absolute top-4 right-4 md:top-6 md:right-6 text-on-surface-variant hover:text-on-surface transition-colors bg-surface-container-highest hover:bg-outline-variant/30 rounded-full p-1.5 flex items-center justify-center" aria-label="Close">
+    <span class="material-symbols-outlined text-[20px]">close</span>
+</a>
+<h2 class="font-display-md text-display-md text-on-surface mb-2">Personal Details</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-8">Enter your information exactly as it appears on your Voter ID card.</p>
+
+{% if form.errors %}
+<div class="bg-error-container/20 border border-error/30 text-on-error-container rounded-xl px-4 py-3 mb-6 text-sm">
+    {% for field, errors in form.errors.items %}
+        {% for error in errors %}
+            <p>{{ error }}</p>
+        {% endfor %}
+    {% endfor %}
+</div>
+{% endif %}
+
+<form method="POST" action="{% url 'signup_step1' %}" id="signup-step1-form">
+    {% csrf_token %}
+    <div class="space-y-6">
+        <div class="grid grid-cols-2 gap-6">
+            <div>
+                <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2 uppercase tracking-widest">FIRST NAME <span class="text-error">*</span></label>
+                <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded-xl p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="Enter first name" required/>
+            </div>
+            <div>
+                <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2 uppercase tracking-widest">LAST NAME</label>
+                <input type="text" name="last_name" value="{{ form.last_name.value|default:'' }}" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded-xl p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="Enter last name" required/>
+            </div>
+        </div>
+        <div>
+            <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2 uppercase tracking-widest">DATE OF BIRTH <span class="text-error">*</span></label>
+            <input type="date" name="date_of_birth" value="{{ form.date_of_birth.value|default:'' }}" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded-xl p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none transition-colors" style="color-scheme: dark;" required/>
+        </div>
+        <div>
+            <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2 uppercase tracking-widest">GENDER <span class="text-error">*</span></label>
+            <select name="gender" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded-xl p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none appearance-none transition-colors" required>
+                <option value="">Select Gender</option>
+                <option value="Male" {% if form.gender.value == "Male" %}selected{% endif %}>Male</option>
+                <option value="Female" {% if form.gender.value == "Female" %}selected{% endif %}>Female</option>
+                <option value="Other" {% if form.gender.value == "Other" %}selected{% endif %}>Other</option>
+            </select>
+        </div>
+        <div>
+            <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2 uppercase tracking-widest">EMAIL ADDRESS <span class="text-error">*</span></label>
+            <input type="email" name="email" value="{{ form.email.value|default:'' }}" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded-xl p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="you@example.com" required/>
+        </div>
+        <div>
+            <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2 uppercase tracking-widest">PHONE NUMBER <span class="text-error">*</span></label>
+            <input type="text" name="phone" value="{{ form.phone.value|default:'' }}" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded-xl p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="+91 XXXXX XXXXX" required/>
+        </div>
+        <button type="submit" class="w-full bg-primary text-on-primary font-body-md text-body-md py-4 rounded-full hover:opacity-90 transition-opacity font-semibold flex items-center justify-center gap-2">
+            Continue to Password <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </button>
+    </div>
+</form>
+
+<div class="mt-8 text-center">
+    <p class="text-sm text-on-surface-variant">Already have an account?
+        <a href="{% url 'login' %}" class="text-primary hover:text-primary-fixed transition-colors font-semibold">Sign In</a>
+    </p>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}

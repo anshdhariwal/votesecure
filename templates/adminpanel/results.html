@@ -1,0 +1,110 @@
+{% extends "adminpanel/base_admin.html" %}
+{% block title %}Election Results — VoteSecure Admin{% endblock %}
+
+{% block admin_content %}
+<header class="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-surface-container-high px-gutter py-6 flex justify-between items-end">
+<div>
+    <p class="font-label-caps text-label-caps text-primary mb-2">REPORTING</p>
+    <h1 class="font-display-lg text-display-lg text-on-surface">Results & Reporting</h1>
+</div>
+<div class="flex items-center gap-4">
+    <form method="GET" action="{% url 'admin_results' %}">
+        <select name="election_id" onchange="this.form.submit()" class="bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none appearance-none">
+            {% for e in all_elections %}
+            <option value="{{ e.id }}" {% if election.id == e.id %}selected{% endif %}>{{ e.title }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% if election %}
+        {% if election.status == 'completed' %}
+        <a href="{% url 'pdf_report' election.id %}" class="bg-primary text-on-primary px-6 py-2 rounded-full hover:opacity-90 transition-opacity font-body-md text-body-md flex items-center gap-2 shadow-lg">
+            <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span> Export PDF
+        </a>
+        {% else %}
+        <div class="group relative">
+            <button disabled class="bg-surface-container-high text-on-surface-variant/50 px-6 py-2 rounded-full font-body-md text-body-md flex items-center gap-2 cursor-not-allowed border border-surface-container-highest opacity-70">
+                <span class="material-symbols-outlined text-[18px]">lock</span> Export PDF (Pending)
+            </button>
+            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-surface-container-highest text-on-surface text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-outline-variant/30">
+                Conclude election first to export report
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+</header>
+
+{% if election %}
+<div class="p-gutter space-y-8 max-w-[1400px] mx-auto w-full">
+<!-- Summary Stats -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="bg-[#252320] rounded p-6 border border-[#faf9f5]/10 text-center">
+        <p class="font-display-md text-display-md text-primary">{{ total_votes_cast }}</p>
+        <p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Total Votes</p>
+    </div>
+    <div class="bg-[#252320] rounded p-6 border border-[#faf9f5]/10 text-center">
+        <p class="font-display-md text-display-md text-on-surface">{{ total_eligible }}</p>
+        <p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Eligible Voters</p>
+    </div>
+    <div class="bg-[#252320] rounded p-6 border border-[#faf9f5]/10 text-center">
+        <p class="font-display-md text-display-md text-on-surface">{{ turnout }}%</p>
+        <p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Turnout</p>
+    </div>
+    <div class="bg-[#252320] rounded p-6 border border-[#faf9f5]/10 text-center">
+        <p class="font-display-md text-display-md text-on-surface">{{ positions_with_results|length }}</p>
+        <p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Positions</p>
+    </div>
+</div>
+
+<!-- Per-Position Results -->
+{% for pos_data in positions_with_results %}
+<div class="bg-[#252320] rounded p-card-padding border border-[#faf9f5]/10">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h3 class="font-body-lg text-body-lg text-on-background font-semibold">{{ pos_data.position.title }}</h3>
+            <p class="text-on-surface-variant text-sm mt-1">{{ pos_data.total_votes }} total votes cast</p>
+        </div>
+        {% if pos_data.winner %}
+        <div class="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2">
+            <span class="material-symbols-outlined text-primary text-[18px]">emoji_events</span>
+            <span class="text-primary text-sm font-semibold">{{ pos_data.winner.candidate.full_name }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="space-y-4">
+    {% for entry in pos_data.ranked_candidates %}
+    <div class="flex items-center gap-4">
+        <div class="w-8 h-8 rounded-full {% if forloop.first %}bg-primary text-on-primary{% else %}bg-surface-container-highest text-on-surface-variant{% endif %} flex items-center justify-center text-sm font-semibold shrink-0">
+            {{ entry.rank }}
+        </div>
+        <div class="flex-1">
+            <div class="flex items-center justify-between mb-1">
+                <div>
+                    <span class="text-on-surface font-semibold">{{ entry.candidate.full_name }}</span>
+                    <span class="text-on-surface-variant text-sm ml-2">{{ entry.candidate.affiliation|default:"Independent" }}</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-on-surface font-semibold">{{ entry.vote_count }}</span>
+                    <span class="text-on-surface-variant text-sm ml-1">({{ entry.percentage }}%)</span>
+                </div>
+            </div>
+            <div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                <div class="h-full {% if forloop.first %}bg-primary{% else %}bg-surface-bright{% endif %} rounded-full" style="width: {{ entry.percentage }}%"></div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+</div>
+{% endfor %}
+</div>
+
+{% else %}
+<div class="p-gutter text-center py-20">
+    <span class="material-symbols-outlined text-on-surface-variant text-6xl mb-4">bar_chart</span>
+    <h2 class="font-display-md text-display-md text-on-surface mb-2">No Elections</h2>
+    <p class="font-body-md text-body-md text-on-surface-variant">Create an election first to view results.</p>
+</div>
+{% endif %}
+{% endblock %}

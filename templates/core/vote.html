@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Cast Your Vote — {{ election.title }} | VoteSecure India{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-background">
+<!-- Top Nav -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 md:px-12 py-5 bg-stone-950/90 backdrop-blur-md border-b border-stone-800/50">
+<a href="{% url 'homepage' %}" class="flex items-center gap-2.5 text-2xl font-serif font-bold text-stone-50 tracking-tight">
+<img src="{% static 'power-icon.svg' %}" alt="" class="w-8 h-8"/>VoteSecure</a>
+<div class="flex items-center gap-4">
+    <a href="{% url 'voter_home' %}" class="text-stone-400 hover:text-stone-200 transition-colors flex items-center gap-1 text-sm">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span> Dashboard
+    </a>
+    <a href="{% url 'voter_candidates' %}" class="text-stone-400 hover:text-stone-200 transition-colors text-sm ml-2 border-l border-stone-800 pl-4">Candidates</a>
+</div>
+</nav>
+
+<main class="pt-28 px-6 md:px-margin-page pb-section-gap">
+<div class="max-w-4xl mx-auto">
+<!-- Header -->
+<div class="mb-10">
+    <div class="inline-flex items-center gap-1.5 text-primary text-xs font-semibold mb-3">
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> Active Election
+    </div>
+    <h1 class="font-display-lg text-display-lg text-on-surface mb-2">Cast Your Vote</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant">{{ election.title }} — Select one candidate for each position.</p>
+</div>
+
+<!-- Position Tabs -->
+<div class="flex flex-wrap gap-2 mb-8 border-b border-surface-container-high pb-4">
+    {% for position in positions %}
+    <button onclick="showPosition('{{ position.id }}')" id="tab-{{ position.id }}" class="position-tab px-4 py-2 rounded-full text-sm font-semibold transition-colors {% if forloop.first %}bg-primary text-on-primary{% else %}bg-surface-container text-on-surface-variant hover:bg-surface-container-high{% endif %}">
+        {{ position.title }}
+    </button>
+    {% endfor %}
+</div>
+
+<!-- Position Sections -->
+{% for position in positions %}
+<div id="position-{{ position.id }}" class="position-section space-y-4 {% if not forloop.first %}hidden{% endif %}" data-position-id="{{ position.id }}">
+    <h3 class="font-body-lg text-body-lg text-on-surface font-semibold mb-4">
+        Select candidate for <span class="text-primary">{{ position.title }}</span>
+    </h3>
+    {% for candidate in position.candidates.all %}
+    <label class="candidate-row flex items-center gap-4 bg-surface-container rounded-lg p-5 border border-outline-variant/20 hover:border-primary-container/50 transition-all cursor-pointer group" data-candidate-id="{{ candidate.id }}" data-position-id="{{ position.id }}">
+        <input type="radio" name="position_{{ position.id }}" value="{{ candidate.id }}" class="hidden peer" />
+        <div class="w-5 h-5 rounded-full border-2 border-surface-container-highest flex items-center justify-center shrink-0 peer-checked:border-primary peer-checked:bg-primary transition-colors">
+            <div class="w-2.5 h-2.5 rounded-full bg-transparent peer-checked:bg-on-primary"></div>
+        </div>
+        <div class="flex-1">
+            <div class="flex items-center gap-4">
+                {% if candidate.party and candidate.party.logo %}
+                <img src="{{ candidate.party.logo.url }}" alt="{{ candidate.party.name }}" class="h-10 w-auto object-contain brightness-110">
+                {% endif %}
+                <div>
+                    <p class="text-on-surface font-semibold text-lg">{{ candidate.full_name }}</p>
+                    <p class="text-on-surface-variant text-sm">{{ candidate.party.name|default:candidate.affiliation|default:"Independent" }}</p>
+                </div>
+            </div>
+        </div>
+        <button type="button" onclick="event.preventDefault(); event.stopPropagation(); showCandidateDetail('{{ candidate.id }}')" class="text-on-surface-variant hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+            <span class="material-symbols-outlined">info</span>
+        </button>
+    </label>
+    {% endfor %}
+</div>
+{% endfor %}
+
+<!-- Navigation & Submit -->
+<div class="flex justify-between items-center mt-10 pt-6 border-t border-surface-container-high">
+    <button id="prev-btn" onclick="prevPosition()" class="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1 hidden">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span> Previous
+    </button>
+    <div class="flex-1"></div>
+    <button id="next-btn" onclick="nextPosition()" class="bg-surface-container-high text-on-surface px-6 py-3 rounded-full hover:bg-surface-variant transition-colors flex items-center gap-2">
+        Next Position <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+    </button>
+    <button id="review-btn" onclick="showReviewModal()" class="bg-primary text-on-primary px-8 py-3 rounded-full hover:opacity-90 transition-opacity font-semibold flex items-center gap-2 hidden">
+        Review Ballot <span class="material-symbols-outlined text-[18px]">fact_check</span>
+    </button>
+</div>
+</div>
+</main>
+</div>
+
+<!-- Candidate Detail Modal -->
+{% include "core/candidate_modal.html" %}
+
+<!-- Review Ballot Modal -->
+<div id="review-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+<div class="bg-surface border border-surface-container-highest rounded-xl w-full max-w-lg overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)]">
+    <div class="p-8 border-b border-surface-container-highest">
+        <h2 class="font-display-md text-display-md text-on-surface">Review Your Ballot</h2>
+        <p class="text-on-surface-variant text-sm mt-1">Please verify your selections before final submission.</p>
+    </div>
+    <div id="review-content" class="p-8 space-y-4 max-h-[50vh] overflow-y-auto"></div>
+    <div class="p-6 border-t border-surface-container-highest bg-surface-container/30 flex gap-4">
+        <button onclick="closeModal('review-modal')" class="flex-1 bg-surface-container-high text-on-surface py-3 rounded-full hover:bg-surface-variant transition-colors font-semibold">
+            Edit Choices
+        </button>
+        <button onclick="showConfirmModal()" class="flex-1 bg-primary text-on-primary py-3 rounded-full hover:opacity-90 transition-opacity font-semibold">
+            Confirm & Submit
+        </button>
+    </div>
+</div>
+</div>
+
+<!-- Final Confirmation Modal -->
+<div id="confirm-modal" class="fixed inset-0 z-[110] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+<div class="bg-surface border border-error/30 rounded-xl w-full max-w-md overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)]">
+    <div class="p-8 text-center">
+        <span class="material-symbols-outlined text-error text-5xl mb-4">warning</span>
+        <h2 class="font-display-md text-display-md text-on-surface mb-3">Final Confirmation</h2>
+        <p class="text-on-surface-variant">This action is <strong class="text-error">irreversible</strong>. Once submitted, your vote cannot be changed or withdrawn.</p>
+    </div>
+    <div class="p-6 border-t border-surface-container-highest flex gap-4">
+        <button onclick="closeModal('confirm-modal')" class="flex-1 bg-surface-container-high text-on-surface py-3 rounded-full hover:bg-surface-variant transition-colors font-semibold">
+            Cancel
+        </button>
+        <button id="confirm-vote-btn" onclick="submitVote()" class="flex-1 bg-error text-on-error py-3 rounded-full hover:opacity-90 transition-opacity font-semibold flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">how_to_vote</span> Cast Vote
+        </button>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Position navigation — use strings for IDs to avoid type mismatches and JS syntax errors
+const positionIds = [{% for p in positions %}"{{ p.id }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+let currentIdx = 0;
+const selectedVotes = {};
+
+function showPosition(posId) {
+    // Ensure posId is a string for comparison
+    const targetPosId = String(posId);
+    
+    document.querySelectorAll('.position-section').forEach(s => s.classList.add('hidden'));
+    document.querySelectorAll('.position-tab').forEach(t => {
+        t.classList.remove('bg-primary', 'text-on-primary');
+        t.classList.add('bg-surface-container', 'text-on-surface-variant');
+    });
+    
+    const section = document.getElementById('position-' + targetPosId);
+    if (section) section.classList.remove('hidden');
+    
+    const tab = document.getElementById('tab-' + targetPosId);
+    if (tab) {
+        tab.classList.remove('bg-surface-container', 'text-on-surface-variant');
+        tab.classList.add('bg-primary', 'text-on-primary');
+    }
+    
+    currentIdx = positionIds.indexOf(targetPosId);
+    updateNavButtons();
+}
+
+function nextPosition() {
+    if (currentIdx < positionIds.length - 1) {
+        showPosition(positionIds[currentIdx + 1]);
+    }
+}
+
+function prevPosition() {
+    if (currentIdx > 0) {
+        showPosition(positionIds[currentIdx - 1]);
+    }
+}
+
+function updateNavButtons() {
+    document.getElementById('prev-btn').classList.toggle('hidden', currentIdx === 0);
+    const isLast = currentIdx === positionIds.length - 1;
+    document.getElementById('next-btn').classList.toggle('hidden', isLast);
+    document.getElementById('review-btn').classList.toggle('hidden', !isLast);
+}
+
+// Track selections — handle radio styling
+document.querySelectorAll('.candidate-row input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const posId = this.closest('.position-section').dataset.positionId;
+        selectedVotes[posId] = this.value;
+
+        // Visual feedback — highlight selected row
+        this.closest('.position-section').querySelectorAll('.candidate-row').forEach(row => {
+            row.classList.remove('border-primary-container/50', 'bg-surface-container-high');
+        });
+        this.closest('.candidate-row').classList.add('border-primary-container/50', 'bg-surface-container-high');
+    });
+});
+
+// Candidate detail modal
+function showCandidateDetail(candidateId) {
+    fetch(`/vote/candidate/${candidateId}/`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('modal-name').textContent = data.full_name;
+            
+            const partyEl = document.getElementById('modal-affiliation');
+            if (data.party_name) {
+                partyEl.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        ${data.party_logo ? `<img src="${data.party_logo}" class="h-4 w-auto object-contain brightness-110">` : ''}
+                        <span>${data.party_name}</span>
+                    </div>
+                `;
+            } else {
+                partyEl.textContent = data.affiliation || 'Independent';
+            }
+
+            document.getElementById('modal-position').textContent = 'Contesting for: ' + data.position;
+            document.getElementById('modal-bio').textContent = data.bio || 'No biography available.';
+            document.getElementById('modal-manifesto').textContent = data.manifesto || 'No manifesto available.';
+
+            const photoEl = document.getElementById('modal-photo');
+            const placeholderEl = document.getElementById('modal-photo-placeholder');
+            if (data.photo) {
+                photoEl.src = data.photo;
+                photoEl.classList.remove('hidden');
+                placeholderEl.classList.add('hidden');
+            } else {
+                photoEl.classList.add('hidden');
+                placeholderEl.classList.remove('hidden');
+            }
+
+            const goalsEl = document.getElementById('modal-goals');
+            goalsEl.innerHTML = '';
+            if (data.goals && data.goals.length > 0) {
+                data.goals.forEach(goal => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-start gap-2 text-on-surface';
+                    li.innerHTML = '<span class="text-primary mt-0.5">•</span>' + goal;
+                    goalsEl.appendChild(li);
+                });
+            } else {
+                goalsEl.innerHTML = '<li class="text-on-surface-variant">No goals listed.</li>';
+            }
+            document.getElementById('candidate-modal').classList.remove('hidden');
+        });
+}
+
+// Review modal
+function showReviewModal() {
+    if (Object.keys(selectedVotes).length < positionIds.length) {
+        alert('Please select a candidate for all positions before reviewing.');
+        return;
+    }
+
+    const content = document.getElementById('review-content');
+    content.innerHTML = '';
+
+    positionIds.forEach(posId => {
+        const section = document.getElementById('position-' + posId);
+        const posTitle = section.querySelector('h3 span').textContent;
+        const selectedRadio = section.querySelector('input[type="radio"]:checked');
+
+        if (selectedRadio) {
+            const row = selectedRadio.closest('.candidate-row');
+            const name = row.querySelector('.font-semibold').textContent;
+            const party = row.querySelector('.text-sm').textContent;
+
+            const div = document.createElement('div');
+            div.className = 'flex items-center justify-between bg-surface-container rounded-lg p-4 border border-outline-variant/20';
+            div.innerHTML = `
+                <div>
+                    <p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest mb-1">${posTitle}</p>
+                    <p class="text-on-surface font-semibold">${name}</p>
+                    <p class="text-on-surface-variant text-sm">${party}</p>
+                </div>
+                <span class="material-symbols-outlined text-green-400">check_circle</span>
+            `;
+            content.appendChild(div);
+        }
+    });
+
+    document.getElementById('review-modal').classList.remove('hidden');
+}
+
+function showConfirmModal() {
+    document.getElementById('confirm-modal').classList.remove('hidden');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+}
+
+// CSRF token helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Submit vote via AJAX
+function submitVote() {
+    const btn = document.getElementById('confirm-vote-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span> Submitting...';
+
+    fetch("{% url 'vote' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ votes: selectedVotes }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = "{% url 'voter_home' %}?voted=1";
+        } else {
+            alert(data.error || 'An error occurred.');
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">how_to_vote</span> Cast Vote';
+        }
+    })
+    .catch(err => {
+        alert('Network error. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">how_to_vote</span> Cast Vote';
+    });
+}
+
+// Close modals on backdrop click
+document.querySelectorAll('.fixed.inset-0').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) closeModal(this.id);
+    });
+});
+
+updateNavButtons();
+</script>
+{% endblock %}

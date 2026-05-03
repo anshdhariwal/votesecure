@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Candidates — VoteSecure India{% block title_end %}{% endblock %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-background">
+    <!-- Top Nav -->
+    <nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 md:px-12 py-5 bg-stone-950/90 backdrop-blur-md border-b border-stone-800/50">
+        <a href="{% url 'voter_home' %}" class="flex items-center gap-2.5 text-2xl font-serif font-bold text-stone-50 tracking-tight">
+            <img src="{% static 'power-icon.svg' %}" alt="" class="w-8 h-8"/>VoteSecure
+        </a>
+        <div class="flex items-center gap-6">
+            <a href="{% url 'voter_candidates' %}" class="font-body-md text-body-md text-stone-200 transition-colors hidden md:block">Candidates</a>
+            <a href="{% url 'results' %}" class="font-body-md text-body-md text-stone-400 hover:text-stone-200 transition-colors hidden md:block">Results</a>
+            <a href="{% url 'voter_home' %}" class="font-body-md text-body-md text-primary hover:opacity-80 transition-opacity hidden md:block">Dashboard</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-28 px-6 md:px-margin-page pb-section-gap">
+        <div class="max-w-[1500px] mx-auto w-full space-y-12">
+            <header class="text-center space-y-4 mb-16">
+                <p class="font-label-caps text-label-caps text-primary uppercase tracking-[0.2em]">Ballot 2025</p>
+                <h1 class="font-display-lg text-display-lg text-on-surface">Meet the Candidates</h1>
+                <p class="text-on-surface-variant max-w-2xl mx-auto">Explore the profiles, biographies, and manifestos of the leaders contesting in this election cycle.</p>
+            </header>
+
+            {% for position in positions %}
+            <div>
+                <!-- Position Header -->
+                <div class="flex items-center gap-6 mb-8">
+                    <h2 class="font-display-md text-3xl text-on-surface font-bold">{{ position.title }}</h2>
+                    <div class="h-px flex-1 bg-surface-container-highest"></div>
+                    <span class="bg-surface-container-high text-on-surface-variant px-4 py-1.5 rounded-full text-xs font-label-caps border border-outline-variant/20">
+                        {{ position.candidates.count }} CANDIDATES
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {% for candidate in position.candidates.all %}
+                    <div class="bg-surface-container-low rounded-2xl border border-surface-container-highest overflow-hidden group relative flex flex-col transition-all duration-500 hover:shadow-2xl hover:-translate-y-1">
+                        
+                        <!-- Image Section -->
+                        <div class="h-64 w-full relative overflow-hidden bg-surface-dim">
+                            {% if candidate.photo %}
+                            <img alt="{{ candidate.full_name }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="{{ candidate.photo.url }}"/>
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center bg-surface-container-highest">
+                                <span class="material-symbols-outlined text-on-surface-variant text-7xl opacity-20">person</span>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Party Logo Overlay -->
+                            {% if candidate.party and candidate.party.logo %}
+                            <div class="absolute top-4 left-4 z-10 w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl p-2 border border-white/20 shadow-xl overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                                <img src="{{ candidate.party.logo.url }}" alt="{{ candidate.party.name }}" class="w-full h-full object-contain">
+                            </div>
+                            {% endif %}
+
+                            <!-- Gradient Overlay -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
+                            
+                            <!-- Bottom Info -->
+                            <div class="absolute inset-x-0 bottom-0 p-6">
+                                <span class="inline-block bg-primary/20 backdrop-blur-md text-primary border border-primary/30 px-3 py-1 rounded-md text-[10px] font-label-caps tracking-widest mb-2">
+                                    {{ candidate.party.name|default:candidate.affiliation|default:"INDEPENDENT"|upper }}
+                                </span>
+                                <h3 class="font-display-md text-2xl text-on-surface leading-tight flex items-center gap-2">
+                                    {{ candidate.full_name }}
+                                    {% if candidate.is_winner %}
+                                    <span class="text-yellow-400 drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]" title="Winner">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5Z" fill="currentColor" stroke="#B8860B" stroke-width="0.5" stroke-linejoin="round"/>
+                                            <path d="M5 18H19V19C19 19.5523 18.5523 20 18 20H6C5.44772 20 5 19.5523 5 19V18Z" fill="currentColor" stroke="#B8860B" stroke-width="0.5" stroke-linejoin="round"/>
+                                        </svg>
+                                    </span>
+                                    {% endif %}
+                                </h3>
+                            </div>
+                        </div>
+
+                        <!-- Details Section -->
+                        <div class="p-6 flex-1 flex flex-col space-y-6">
+                            <div>
+                                <h4 class="text-[10px] font-label-caps text-on-surface-variant uppercase tracking-widest mb-2">BIOGRAPHY</h4>
+                                <p class="text-sm text-on-surface-variant line-clamp-3 leading-relaxed">{{ candidate.bio|default:"No biography provided." }}</p>
+                            </div>
+                            
+                            <div class="pt-4 border-t border-surface-container-highest flex justify-between items-center mt-auto">
+                                <button onclick="showCandidateDetail({{ candidate.id }})" class="text-primary hover:text-primary-fixed transition-colors text-sm font-semibold flex items-center gap-1">
+                                    View Full Profile <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                                </button>
+                                {% if candidate.is_winner %}
+                                <span class="text-yellow-400 text-[10px] font-bold flex items-center gap-1 tracking-widest">
+                                    <span class="material-symbols-outlined text-[14px]">stars</span> WINNER
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+
+<!-- Reusable Candidate Modal -->
+{% include "core/candidate_modal.html" %}
+
+<script>
+function showCandidateDetail(candidateId) {
+    const modal = document.getElementById('candidate-modal');
+    modal.classList.remove('hidden');
+    
+    fetch(`/vote/candidate/${candidateId}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('modal-name').textContent = data.full_name;
+            document.getElementById('modal-affiliation').textContent = data.party_name || data.affiliation || 'Independent';
+            document.getElementById('modal-position').textContent = 'Contesting for: ' + data.position;
+            document.getElementById('modal-bio').textContent = data.bio || 'No biography available.';
+            document.getElementById('modal-manifesto').textContent = data.manifesto || 'No manifesto available.';
+
+            const photoEl = document.getElementById('modal-photo');
+            const placeholderEl = document.getElementById('modal-photo-placeholder');
+            if (data.photo) {
+                photoEl.src = data.photo;
+                photoEl.classList.remove('hidden');
+                placeholderEl.classList.add('hidden');
+            } else {
+                photoEl.classList.add('hidden');
+                placeholderEl.classList.remove('hidden');
+            }
+        });
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Voter Dashboard — VoteSecure India{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-background">
+<!-- Top Nav -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 md:px-12 py-5 bg-stone-950/90 backdrop-blur-md border-b border-stone-800/50">
+<a href="{% url 'homepage' %}" class="flex items-center gap-2.5 text-2xl font-serif font-bold text-stone-50 tracking-tight">
+<img src="{% static 'power-icon.svg' %}" alt="" class="w-8 h-8"/>VoteSecure</a>
+<div class="flex items-center gap-6">
+    <a href="{% url 'voter_candidates' %}" class="font-body-md text-body-md text-stone-400 hover:text-stone-200 transition-colors hidden md:block">Candidates</a>
+    <a href="{% url 'results' %}" class="font-body-md text-body-md text-stone-400 hover:text-stone-200 transition-colors hidden md:block">Results</a>
+    <a href="https://github.com/anshdhariwal" target="_blank" class="font-body-md text-body-md text-primary/80 hover:text-primary transition-colors hidden md:block flex items-center gap-1">
+        <span class="material-symbols-outlined text-[18px]">code</span> Repo
+    </a>
+    <!-- Profile Dropdown Menu -->
+    <div class="relative" id="profile-dropdown-container">
+        <button type="button" onclick="toggleProfileDropdown()" class="flex items-center gap-3 hover:bg-surface-container/50 p-1.5 pr-3 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50">
+            <div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-sm font-semibold">
+                {{ request.user.first_name.0 }}{{ request.user.last_name.0 }}
+            </div>
+            <span class="text-on-surface text-sm font-semibold hidden md:block">{{ request.user.first_name }}</span>
+            <span class="material-symbols-outlined text-on-surface-variant text-[20px] hidden md:block">expand_more</span>
+        </button>
+        
+        <!-- Dropdown Menu -->
+        <div id="profile-dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-surface-container-high border border-outline-variant/30 rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50">
+            <div class="px-4 py-3 border-b border-outline-variant/20">
+                <p class="text-sm text-on-surface font-semibold truncate">{{ request.user.full_name }}</p>
+                <p class="text-xs text-on-surface-variant truncate">{{ request.user.email }}</p>
+            </div>
+            <div class="py-1">
+                <a href="{% url 'change_password' %}" class="flex items-center gap-2 px-4 py-2 text-sm text-on-surface hover:bg-surface-container-highest transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">key</span> Change Password
+                </a>
+                <form method="POST" action="{% url 'logout' %}" class="block w-full">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-error hover:bg-error-container/20 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">logout</span> Sign Out
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</nav>
+</nav>
+
+<!-- Main Content -->
+<main class="pt-28 px-6 md:px-margin-page pb-section-gap">
+<div class="max-w-5xl mx-auto space-y-12">
+
+{% if winners %}
+<!-- Celebration Alert -->
+<div class="bg-primary/10 backdrop-blur-md border border-primary/20 rounded-2xl p-6 flex items-center justify-between shadow-2xl shadow-primary/5 animate-slide-in">
+    <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary animate-bounce">
+            <span class="material-symbols-outlined text-2xl">celebration</span>
+        </div>
+        <div>
+            <h3 class="text-on-surface font-semibold text-lg leading-none mb-1">The Results are Out!</h3>
+            <p class="text-on-surface-variant text-sm">Official winners have been declared. View the representatives below.</p>
+        </div>
+    </div>
+    <a href="{% url 'results' %}" class="bg-primary text-on-primary px-6 py-2.5 rounded-full font-semibold text-sm hover:opacity-90 transition-opacity">
+        Detailed Results
+    </a>
+</div>
+{% endif %}
+<!-- Welcome Section -->
+<section>
+    <h1 class="font-display-lg text-display-lg text-on-surface mb-2">Welcome back, {{ request.user.first_name }} !</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant">Your voter dashboard for the current electoral cycle.</p>
+</section>
+
+{% if election %}
+<!-- Election Info Card -->
+<section class="bg-surface-container rounded-xl p-card-padding border border-outline-variant/30">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="space-y-3">
+            <div class="flex items-center gap-2">
+                {% if election.is_active %}
+                <span class="inline-flex items-center gap-1.5 text-primary text-xs font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> Active Election
+                </span>
+                {% elif election.status == 'completed' %}
+                <span class="inline-flex items-center gap-1.5 text-on-surface-variant text-xs font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-on-surface-variant"></span> Concluded
+                </span>
+                {% else %}
+                <span class="inline-flex items-center gap-1.5 text-secondary text-xs font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-secondary"></span> Upcoming
+                </span>
+                {% endif %}
+            </div>
+            <h2 class="font-display-md text-display-md text-on-surface">{{ election.title }}</h2>
+            <p class="font-body-md text-body-md text-on-surface-variant">{{ election.description|truncatewords:25 }}</p>
+            <div class="flex flex-wrap gap-4 text-sm text-on-surface-variant">
+                <span class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                    {{ election.start_date|date:"d M Y" }} — {{ election.end_date|date:"d M Y" }}
+                </span>
+                <span class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[18px]">ballot</span>
+                    {{ election.positions.count }} Position{{ election.positions.count|pluralize }}
+                </span>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-end gap-3">
+            {% if has_voted %}
+            <div class="bg-green-900/30 border border-green-700/30 text-green-400 px-6 py-3 rounded-full flex items-center gap-2 font-semibold text-sm">
+                <span class="material-symbols-outlined text-[20px]">verified</span>
+                Vote Recorded
+            </div>
+            {% elif election.is_active %}
+            <a href="{% url 'vote' %}" class="bg-primary text-on-primary px-8 py-4 rounded-full hover:opacity-90 transition-opacity font-semibold inline-flex items-center justify-center gap-2 whitespace-nowrap">
+                Cast Your Vote <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </a>
+            {% endif %}
+
+            {% if time_remaining %}
+            <p class="text-xs text-on-surface-variant">
+                <span class="material-symbols-outlined text-[14px] align-text-bottom">schedule</span>
+                {{ time_remaining.days }}d remaining
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% if winners %}
+<!-- Election Results / Winners Section -->
+<section class="space-y-8 mb-16">
+    <div class="flex items-center gap-4">
+        <h3 class="font-display-md text-3xl text-on-surface">Electoral Outcome</h3>
+        <div class="h-px flex-1 bg-surface-container-highest"></div>
+        <span class="bg-primary/20 text-primary border border-primary/30 px-4 py-1 rounded-full text-xs font-label-caps">OFFICIAL RESULTS</span>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {% for winner in winners %}
+        <div class="bg-surface-container-high rounded-2xl p-8 border border-primary/20 relative overflow-hidden group shadow-2xl shadow-primary/5 transition-all duration-500 hover:shadow-primary/10">
+            <!-- Background Glow -->
+            <div class="absolute -top-20 -right-20 w-48 h-48 bg-primary/10 rounded-full blur-[100px] pointer-events-none group-hover:bg-primary/20 transition-all duration-700"></div>
+            
+            <div class="flex items-center gap-6 relative z-10">
+                <div class="w-20 h-20 rounded-2xl overflow-hidden bg-surface-container-highest shrink-0 shadow-lg ring-4 ring-primary/10">
+                    {% if winner.candidate.photo %}
+                    <img src="{{ winner.candidate.photo.url }}" class="w-full h-full object-cover">
+                    {% else %}
+                    <div class="w-full h-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-4xl opacity-20">person</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="flex-1">
+                    <p class="text-primary font-label-caps text-[10px] tracking-widest uppercase mb-2">ELECTED {{ winner.position }}</p>
+                    <h4 class="text-on-surface font-display-md text-2xl mb-1">{{ winner.candidate.full_name }}</h4>
+                    <div class="flex items-center gap-2">
+                        {% if winner.candidate.party.logo %}
+                        <img src="{{ winner.candidate.party.logo.url }}" class="h-5 w-auto object-contain brightness-110">
+                        {% endif %}
+                        <p class="text-on-surface-variant text-sm">{{ winner.candidate.party.name|default:winner.candidate.affiliation }}</p>
+                    </div>
+                </div>
+                
+                <!-- Winner Icon -->
+                <div class="ml-auto text-primary drop-shadow-[0_0_15px_rgba(255,181,157,0.5)]">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5Z" fill="currentColor" opacity="0.9"/>
+                        <path d="M5 18H19V19C19 19.5523 18.5523 20 18 20H6C5.44772 20 5 19.5523 5 19V18Z" fill="currentColor"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if has_voted %}
+<!-- Voted Summary -->
+<section class="space-y-6">
+    <h3 class="font-body-lg text-body-lg text-on-surface font-semibold">Your Ballot Summary</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for vote in votes_cast %}
+        <div class="bg-surface-container rounded-lg p-6 border border-outline-variant/20">
+            <p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest mb-2">{{ vote.position.title }}</p>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center">
+                    <span class="material-symbols-outlined text-on-surface-variant text-[20px]">person</span>
+                </div>
+                <div>
+                    <p class="text-on-surface font-semibold">{{ vote.candidate.full_name }}</p>
+                    <p class="text-on-surface-variant text-sm">{{ vote.candidate.affiliation }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="text-center pt-4">
+        <a href="{% url 'results' %}" class="text-primary hover:text-primary-fixed transition-colors text-sm font-semibold flex items-center justify-center gap-1">
+            View Live Results <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </a>
+    </div>
+</section>
+{% endif %}
+
+{% else %}
+<!-- No Election -->
+<section class="bg-surface-container rounded-xl p-card-padding border border-outline-variant/30 text-center">
+    <span class="material-symbols-outlined text-on-surface-variant text-6xl mb-4">how_to_vote</span>
+    <h2 class="font-display-md text-display-md text-on-surface mb-2">No Active Elections</h2>
+    <p class="font-body-md text-body-md text-on-surface-variant max-w-md mx-auto">There are no active elections at this time. Check back later or view past results.</p>
+    <a href="{% url 'results' %}" class="inline-flex items-center gap-2 mt-6 text-primary hover:text-primary-fixed transition-colors font-semibold">
+        View Past Results <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+    </a>
+</section>
+{% endif %}
+
+<!-- Quick Links -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-surface-container rounded-lg p-6 border border-outline-variant/20 hover:border-outline/50 transition-colors">
+        <span class="material-symbols-outlined text-primary text-3xl mb-3">person</span>
+        <h4 class="text-on-surface font-semibold mb-1">Your Profile</h4>
+        <p class="text-on-surface-variant text-sm">{{ request.user.email }}</p>
+        <p class="text-on-surface-variant text-sm">Age: {{ request.user.age }} • {{ request.user.gender }}</p>
+    </div>
+    <a href="{% url 'results' %}" class="bg-surface-container rounded-lg p-6 border border-outline-variant/20 hover:border-outline/50 transition-colors">
+        <span class="material-symbols-outlined text-primary text-3xl mb-3">bar_chart</span>
+        <h4 class="text-on-surface font-semibold mb-1">Election Results</h4>
+        <p class="text-on-surface-variant text-sm">View real-time tallies and position-wise breakdowns.</p>
+    </a>
+    <div class="bg-surface-container rounded-lg p-6 border border-outline-variant/20 hover:border-outline/50 transition-colors">
+        <span class="material-symbols-outlined text-primary text-3xl mb-3">security</span>
+        <h4 class="text-on-surface font-semibold mb-1">Vote Security</h4>
+        <p class="text-on-surface-variant text-sm">Your vote is encrypted and recorded with a tamper-proof audit trail.</p>
+    </div>
+</section>
+</div>
+</main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleProfileDropdown() {
+        const menu = document.getElementById('profile-dropdown-menu');
+        menu.classList.toggle('hidden');
+    }
+
+    // Close the dropdown if the user clicks outside of it
+    window.addEventListener('click', function(e) {
+        const container = document.getElementById('profile-dropdown-container');
+        const menu = document.getElementById('profile-dropdown-menu');
+        if (container && !container.contains(e.target)) {
+            if (!menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
+        }
+    });
+</script>
+{% endblock %}

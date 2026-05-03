@@ -1,0 +1,208 @@
+{% extends "adminpanel/base_admin.html" %}
+{% block title %}Elections Manager — VoteSecure Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<header class="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-surface-container-high px-gutter py-6 flex justify-between items-end">
+<div>
+    <p class="font-label-caps text-label-caps text-primary mb-2">BALLOT MANAGEMENT</p>
+    <h1 class="font-display-lg text-display-lg text-on-surface">Elections Manager</h1>
+</div>
+<button onclick="document.getElementById('create-election-modal').classList.remove('hidden')" class="bg-[#cc785c] text-stone-50 font-label-caps text-label-caps py-3 px-6 rounded-full hover:bg-[#b06149] transition-colors flex items-center gap-2">
+    <span class="material-symbols-outlined text-[18px]">add</span> New Election
+</button>
+</header>
+
+<div class="p-gutter space-y-8 max-w-[1400px] mx-auto w-full">
+<!-- Elections Table -->
+<div class="bg-[#252320] rounded p-card-padding border border-[#faf9f5]/10">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-surface-container-high">
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Election Name</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Schedule</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Positions</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Votes</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Status</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-background divide-y divide-surface-container-high">
+{% for election in elections %}
+<tr class="hover:bg-surface-container/50 transition-colors">
+<td class="py-5 px-4 font-semibold">{{ election.title }}</td>
+<td class="py-5 px-4 text-on-surface-variant">{{ election.start_date|date:"d M" }} — {{ election.end_date|date:"d M Y" }}</td>
+<td class="py-5 px-4">
+    <span class="inline-flex items-center justify-center bg-surface-container-high text-on-background rounded-full px-2 py-1 text-[10px] font-label-caps border border-surface-variant">
+        {{ election.positions.count }} Positions
+    </span>
+</td>
+<td class="py-5 px-4 text-on-surface-variant">{{ election.votes.count }}</td>
+<td class="py-5 px-4">
+    {% if election.status == 'active' %}
+    <span class="inline-flex items-center gap-1.5 text-[#4ade80]"><span class="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse"></span> Active</span>
+    {% elif election.status == 'upcoming' %}
+    <span class="inline-flex items-center gap-1.5 text-[#f87171]"><span class="w-2 h-2 rounded-full bg-[#f87171]"></span> Scheduled</span>
+    {% else %}
+    <span class="inline-flex items-center gap-1.5 text-[#f87171] opacity-70"><span class="w-2 h-2 rounded-full bg-[#f87171]"></span> Concluded</span>
+    {% endif %}
+</td>
+<td class="py-5 px-4">
+    <div class="flex items-center gap-3">
+        {% if election.status == 'active' %}
+        <form method="POST" action="{% url 'admin_elections' %}" class="inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="conclude">
+            <input type="hidden" name="id" value="{{ election.id }}">
+            <button type="submit" onclick="return confirm('Are you sure you want to conclude this election? This will end the voting process immediately and cannot be undone.')" class="text-primary hover:text-primary-fixed transition-colors flex items-center gap-1 text-xs font-semibold" title="Conclude Election">
+                <span class="material-symbols-outlined text-[18px]">done_all</span> Conclude
+            </button>
+        </form>
+        {% endif %}
+        <button type="button" onclick="openDeleteModal('{{ election.id }}', '{{ election.title|escapejs }}')" class="text-error hover:text-on-error-container transition-colors text-sm" title="Delete Election">
+            <span class="material-symbols-outlined text-[18px]">delete</span>
+        </button>
+    </div>
+</td>
+</tr>
+{% empty %}
+<tr><td colspan="6" class="py-8 text-center text-on-surface-variant">No elections yet. Create one to get started.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- Create Election Modal -->
+<div id="create-election-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+<div class="bg-surface border border-surface-container-highest rounded-xl w-full max-w-2xl overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)]">
+<form method="POST" action="{% url 'admin_elections' %}">
+{% csrf_token %}
+<input type="hidden" name="action" value="create">
+<div class="p-8 border-b border-surface-container-highest flex justify-between items-center">
+    <h2 class="font-display-md text-display-md text-on-surface">Create New Election</h2>
+    <button type="button" onclick="document.getElementById('create-election-modal').classList.add('hidden')" class="text-on-surface-variant hover:text-on-surface">
+        <span class="material-symbols-outlined">close</span>
+    </button>
+</div>
+<div class="p-8 space-y-6">
+    <div>
+        <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">ELECTION TITLE</label>
+        <input type="text" name="title" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none" placeholder="e.g. Lok Sabha General Elections 2025" required>
+    </div>
+    <div>
+        <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">DESCRIPTION</label>
+        <textarea name="description" rows="3" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none" placeholder="Brief description..."></textarea>
+    </div>
+    <div class="grid grid-cols-2 gap-6">
+        <div>
+            <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">START DATE</label>
+            <input type="datetime-local" name="start_date" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none" required>
+        </div>
+        <div>
+            <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">END DATE</label>
+            <input type="datetime-local" name="end_date" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none" required>
+        </div>
+    </div>
+    <div>
+        <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">POSITIONS</label>
+        <div id="positions-container" class="space-y-2">
+            <input type="text" name="position_titles[]" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none" placeholder="e.g. Prime Minister">
+        </div>
+        <button type="button" onclick="addPositionField()" class="mt-2 text-primary text-sm flex items-center gap-1 hover:text-primary-fixed transition-colors">
+            <span class="material-symbols-outlined text-[16px]">add</span> Add Position
+        </button>
+    </div>
+</div>
+<div class="p-8 bg-surface-container-low border-t border-surface-container-highest flex justify-end gap-4">
+    <button type="button" onclick="document.getElementById('create-election-modal').classList.add('hidden')" class="px-6 py-2 rounded-full text-on-surface hover:bg-surface-container-high transition-colors font-body-md text-body-md">Cancel</button>
+    <button type="submit" class="bg-primary text-on-primary px-6 py-2 rounded-full hover:bg-primary-fixed transition-colors font-body-md text-body-md">Create Election</button>
+</div>
+</form>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
+    <div class="relative bg-surface-container-high border border-surface-container-highest rounded-2xl w-full max-w-md p-6 shadow-2xl">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 rounded-full bg-error-container text-on-error-container flex items-center justify-center mx-auto mb-4">
+                <span class="material-symbols-outlined text-3xl">warning</span>
+            </div>
+            <h3 class="font-display-md text-2xl text-on-surface mb-2">Delete Election?</h3>
+            <p class="font-body-md text-on-surface-variant text-sm mb-4">
+                This will permanently delete <strong id="delete-election-name" class="text-on-surface"></strong> and all its associated votes and candidates.
+            </p>
+            <div class="bg-surface-container px-4 py-3 rounded-lg border border-surface-container-highest mb-4 text-left">
+                <p class="text-xs text-on-surface-variant mb-2 font-label-caps uppercase tracking-wider">Type the election name below to confirm:</p>
+                <input type="text" id="confirm-input" oninput="checkDeleteConfirm()" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-2.5 font-body-md text-sm focus:border-error focus:ring-0 outline-none" placeholder="Enter election name">
+            </div>
+        </div>
+        
+        <form method="POST" action="{% url 'admin_elections' %}" class="flex gap-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="id" id="delete-id">
+            <button type="button" onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 rounded-full border border-outline-variant text-on-surface hover:bg-surface-container-highest transition-colors font-semibold text-sm">
+                Cancel
+            </button>
+            <button type="submit" id="delete-submit-btn" disabled class="flex-1 px-4 py-2.5 rounded-full bg-error text-on-error opacity-50 cursor-not-allowed transition-all font-semibold text-sm flex items-center justify-center gap-2">
+                Delete Election
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+let currentElectionTitle = '';
+
+function addPositionField() {
+    const container = document.getElementById('positions-container');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'position_titles[]';
+    input.className = 'w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none';
+    input.placeholder = 'Position title';
+    container.appendChild(input);
+}
+
+function openDeleteModal(id, title) {
+    currentElectionTitle = title;
+    document.getElementById('delete-id').value = id;
+    document.getElementById('delete-election-name').innerText = title;
+    document.getElementById('confirm-input').value = '';
+    document.getElementById('delete-submit-btn').disabled = true;
+    document.getElementById('delete-submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+}
+
+function checkDeleteConfirm() {
+    const input = document.getElementById('confirm-input').value;
+    const btn = document.getElementById('delete-submit-btn');
+    if (input === currentElectionTitle) {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+}
+</script>
+{% endblock %}

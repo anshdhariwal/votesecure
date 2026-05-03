@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}VoteSecure — India's Secure Voting Platform{% endblock %}
+{% block meta_description %}VoteSecure India — Secure, transparent digital voting platform for Lok Sabha, Vidhan Sabha, and local body elections.{% endblock %}
+
+{% block content %}
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-12 py-6 bg-stone-950/90 backdrop-blur-md border-b border-stone-800/50">
+<div class="flex items-center gap-gutter">
+<a href="{% url 'homepage' %}" class="flex items-center gap-2.5 text-2xl font-serif font-bold text-stone-50 tracking-tight">
+<img src="{% static 'power-icon.svg' %}" alt="" class="w-8 h-8"/>VoteSecure</a>
+<div class="hidden md:flex gap-gutter items-center ml-8">
+<a class="font-body-md text-body-md text-stone-400 hover:text-stone-200 transition-colors" href="{% url 'results' %}">Results</a>
+<a class="font-body-md text-body-md text-stone-400 hover:text-stone-200 transition-colors" href="#features">Security</a>
+<a class="font-body-md text-body-md text-stone-400 hover:text-stone-200 transition-colors" href="#process">Process</a>
+<a class="font-body-md text-body-md text-primary/80 hover:text-primary transition-colors flex items-center gap-1" href="https://github.com/anshdhariwal" target="_blank">
+    <span class="material-symbols-outlined text-[18px]">code</span> Source
+</a>
+</div>
+</div>
+<div class="flex items-center gap-gutter">
+{% if request.user.is_authenticated %}
+<a href="{% url 'voter_home' %}" class="font-body-md text-body-md text-stone-400 hover:text-stone-200 transition-colors hidden md:block rounded-full">Dashboard</a>
+<form method="POST" action="{% url 'logout' %}" class="inline">
+    {% csrf_token %}
+    <button type="submit" class="font-body-md text-body-md text-stone-400 hover:text-stone-200 transition-colors hidden md:block rounded-full">Log Out</button>
+</form>
+{% else %}
+<a href="{% url 'login' %}" class="font-body-md text-body-md text-stone-400 hover:text-stone-200 transition-colors hidden md:block rounded-full">Log In</a>
+<a href="{% url 'signup_step1' %}" class="bg-primary text-on-primary font-body-md text-body-md px-6 py-2 rounded-full flex items-center gap-2 hover:opacity-80 transition-all scale-95 duration-200">
+<span>Register to Vote</span>
+<span class="material-symbols-outlined" data-icon="shield">shield</span>
+</a>
+{% endif %}
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-32 pb-section-gap px-margin-page">
+<div class="max-w-7xl mx-auto space-y-section-gap">
+<!-- Hero Section -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-center min-h-[60vh]">
+<div class="lg:col-span-7 space-y-8">
+<div class="inline-flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full border border-outline-variant">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Powering India's Digital Democracy</span>
+</div>
+<h1 class="font-display-xl text-display-xl text-on-surface">
+    India Votes. <br/>
+<span class="text-primary italic">Democracy, fixed.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+    A fully-featured, working election lifecycle platform. Secure dashboards, real-time results, and ECI-grade audits for the world's largest democracy.
+</p>
+<div class="flex flex-wrap items-center gap-6 pt-4">
+{% if request.user.is_authenticated %}
+<a href="{% url 'voter_home' %}" class="bg-primary text-on-primary font-body-md text-body-md px-8 py-4 rounded-full hover:opacity-90 transition-opacity font-semibold flex items-center gap-2">
+    Go to Dashboard <span aria-hidden="true">→</span>
+</a>
+{% else %}
+<a href="{% url 'signup_step1' %}" class="bg-primary text-on-primary font-body-md text-body-md px-8 py-4 rounded-full hover:opacity-90 transition-opacity font-semibold flex items-center gap-2">
+    Register to Vote <span aria-hidden="true">→</span>
+</a>
+{% endif %}
+<a href="{% url 'results' %}" class="bg-transparent border border-outline-variant text-on-surface font-body-md text-body-md px-8 py-4 rounded-full hover:bg-surface-container transition-colors">
+    View Results
+</a>
+</div>
+<div class="flex flex-wrap gap-4 pt-4">
+<span class="text-sm text-secondary flex items-center gap-1"><span class="text-primary">✓</span> Aadhaar-linked voter verification</span>
+<span class="text-sm text-secondary flex items-center gap-1"><span class="text-primary">✓</span> One vote per constituency</span>
+<span class="text-sm text-secondary flex items-center gap-1"><span class="text-primary">✓</span> Exportable PDF audit trail</span>
+</div>
+</div>
+<div class="lg:col-span-5 relative">
+<div class="aspect-[4/5] rounded-xl overflow-hidden shadow-2xl shadow-black/50 border border-outline-variant/30">
+<img alt="VoteSecure Dashboard" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVStBz6LnzG1U9rKHqj-0mIPpQR6TmbPfVJqx_eevv_f58peFb4kKlZJ487xal9b5ogUFFgAPhBlJ_3cyOvl3Ct1yBpwlOJGa0JQKv6O_5UJCqyr0osWGKgnLf967BdvsgfrlMLQkJmx4e4eE97tNgDbbBOObtNIVKEPU_5Dg2KmkiJJz_w90Qk78U8UtVc5u0nwN1IFgDXuBDB7rLN16zB-CpAiQCjv0MI6gCcqBL4lJoQ2ykQYY0raLYX2_NgnUEvf8gOePR_X4"/>
+</div>
+</div>
+</section>
+<!-- Stats Section -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-gutter border-y border-outline-variant/50 py-12">
+<div class="text-center space-y-2">
+<div class="font-display-md text-display-md text-primary">{{ total_voters|default:"0" }}</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Registered Voters</div>
+</div>
+<div class="text-center space-y-2 border-l border-outline-variant/50">
+<div class="font-display-md text-display-md text-on-surface">{{ total_votes|default:"0" }}</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Votes Cast</div>
+</div>
+<div class="text-center space-y-2 border-l border-outline-variant/50">
+<div class="font-display-md text-display-md text-on-surface">99.9%</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Uptime</div>
+</div>
+<div class="text-center space-y-2 border-l border-outline-variant/50">
+<div class="font-display-md text-display-md text-on-surface">0</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Disputed Results</div>
+</div>
+</section>
+<!-- Bento Grid Features -->
+<section id="features" class="space-y-12">
+<div class="text-center max-w-3xl mx-auto space-y-4">
+<h2 class="font-display-lg text-display-lg text-on-surface">Democracy at scale</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Scalable, secure infrastructure designed for the complexities of Indian elections.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="md:col-span-2 bg-surface-container rounded-xl p-card-padding flex flex-col md:flex-row gap-8 items-center border border-outline-variant/30 hover:border-outline/50 transition-colors group">
+<div class="flex-1 space-y-4">
+<span class="material-symbols-outlined text-primary text-4xl">how_to_reg</span>
+<h3 class="font-display-md text-display-md text-on-surface">Aadhaar Verification</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Seamless integration with UIDAI ensures absolute identity verification, eliminating duplication while maintaining voter privacy.</p>
+</div>
+<div class="flex-1 w-full h-full min-h-[250px] rounded-lg overflow-hidden border border-outline-variant/50 relative">
+<img alt="Aadhaar Verification" class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCE-WGrmMmyS1jvQRjN9kwPi4kRM7njHsNNCy-R7p5FK0Fj51TCS9WfRQebtYPHvTIhhaBvOCu2w8LslyzN4HpIv5jJBKJ2stbG50DSMR7Tozxg86ih1wSD1TULE6V1eFH4vX-EU-JFncjfKSmSocPcfCW4rldga9yV6GkaspbGkXuBqiNy8MsDTF7Efr5YvryZvQhIz8IRaT0iCI60C-HTyKXUcgS4VYOZyXSFMH3XzgZeZ8pDYhM74TUO5bTl7wYkMQx3DVeqJTc"/>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl p-card-padding space-y-6 border border-outline-variant/30 hover:border-outline/50 transition-colors">
+<span class="material-symbols-outlined text-primary text-4xl">policy</span>
+<h3 class="font-display-md text-display-md text-on-surface leading-tight">ECI-Grade Tools</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">National election management tools built to the exact specifications and rigorous standards of the Election Commission of India.</p>
+</div>
+<div class="bg-surface-container rounded-xl p-card-padding space-y-6 border border-outline-variant/30 hover:border-outline/50 transition-colors">
+<span class="material-symbols-outlined text-primary text-4xl">rule</span>
+<h3 class="font-display-md text-display-md text-on-surface leading-tight">Multi-Position</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Handle complex ballot structures for simultaneous elections across different government tiers effortlessly.</p>
+</div>
+<div class="md:col-span-2 bg-surface-container rounded-xl p-card-padding flex flex-col md:flex-row-reverse gap-8 items-center border border-outline-variant/30 hover:border-outline/50 transition-colors group">
+<div class="flex-1 space-y-4">
+<span class="material-symbols-outlined text-primary text-4xl">description</span>
+<h3 class="font-display-md text-display-md text-on-surface">Compliant Reports</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Generate immutable, cryptographically signed audit reports that comply instantly with ECI formatting requirements.</p>
+</div>
+<div class="flex-1 w-full h-full min-h-[250px] rounded-lg overflow-hidden border border-outline-variant/50 relative">
+<img alt="Compliant Reports" class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf1Qx0pJofZ7UdKndieGL1RjDMcbOepLOY-Krr7TttPooMTeCS7wRACH3nJlnAuB9HvRz2L-8PL3ERVDdQZLe_hs7-vpc2EIALsQwYHp0nUkkMHDWRYFUP14GMnquWyUF6ZJZmAwfSLVfRHhQRp6-E9leA3qlu5fRhm9dz_erD5qvGinnC7xXHtWPrbjaEGaDOCcmep_RJ2Swo0t0x-tT6KtLhyweKWMnIFSKvazA4E9X2Ks6lMlMPXhifhx5Z7CXPRNl556_XSrA"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Process Section -->
+<section id="process" class="py-12 border-t border-outline-variant/50">
+<div class="text-center max-w-3xl mx-auto space-y-4 mb-12">
+<h2 class="font-display-lg text-display-lg text-on-surface">How it works</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">A transparent, four-step process from registration to result declaration.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <div class="relative space-y-4">
+        <div class="w-12 h-12 rounded-full bg-primary/20 text-primary flex items-center justify-center font-display-md text-2xl font-bold mb-4 border border-primary/30">1</div>
+        <h4 class="font-display-md text-xl text-on-surface">Register</h4>
+        <p class="font-body-md text-sm text-on-surface-variant">Link your Aadhaar identity to create a unique, cryptographically secured voter profile.</p>
+    </div>
+    <div class="relative space-y-4">
+        <div class="w-12 h-12 rounded-full bg-primary/20 text-primary flex items-center justify-center font-display-md text-2xl font-bold mb-4 border border-primary/30">2</div>
+        <h4 class="font-display-md text-xl text-on-surface">Authenticate</h4>
+        <p class="font-body-md text-sm text-on-surface-variant">Log in using multi-factor authentication on election day to access your specific ballot.</p>
+    </div>
+    <div class="relative space-y-4">
+        <div class="w-12 h-12 rounded-full bg-primary/20 text-primary flex items-center justify-center font-display-md text-2xl font-bold mb-4 border border-primary/30">3</div>
+        <h4 class="font-display-md text-xl text-on-surface">Cast Vote</h4>
+        <p class="font-body-md text-sm text-on-surface-variant">Make your selections across multiple positions. Your vote is anonymized and encrypted.</p>
+    </div>
+    <div class="relative space-y-4">
+        <div class="w-12 h-12 rounded-full bg-primary/20 text-primary flex items-center justify-center font-display-md text-2xl font-bold mb-4 border border-primary/30">4</div>
+        <h4 class="font-display-md text-xl text-on-surface">Audit</h4>
+        <p class="font-body-md text-sm text-on-surface-variant">Verify your vote was counted through an immutable ledger and public transparency reports.</p>
+    </div>
+</div>
+</section>
+
+<!-- Use Cases Section -->
+<section id="usecases" class="py-12 border-t border-outline-variant/50">
+<div class="flex flex-col md:flex-row gap-12 justify-between items-start">
+<div class="md:w-1/3 space-y-6">
+<h2 class="font-display-lg text-display-lg text-on-surface">Versatile by Design</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">From national parliaments to local village councils, our architecture scales to meet the specific constitutional requirements of every tier of Indian governance.</p>
+</div>
+<div class="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div class="p-6 border border-outline-variant/30 rounded-lg bg-surface hover:bg-surface-container transition-colors">
+<h4 class="font-display-md text-xl text-on-surface mb-2">Lok Sabha</h4>
+<p class="font-body-md text-sm text-on-surface-variant">National parliamentary elections with massive concurrent user load management.</p>
+</div>
+<div class="p-6 border border-outline-variant/30 rounded-lg bg-surface hover:bg-surface-container transition-colors">
+<h4 class="font-display-md text-xl text-on-surface mb-2">Vidhan Sabha</h4>
+<p class="font-body-md text-sm text-on-surface-variant">State legislative assembly elections with regional language support and specific demographic targeting.</p>
+</div>
+<div class="p-6 border border-outline-variant/30 rounded-lg bg-surface hover:bg-surface-container transition-colors">
+<h4 class="font-display-md text-xl text-on-surface mb-2">Municipal</h4>
+<p class="font-body-md text-sm text-on-surface-variant">Urban local body elections handling ward-level complexities and mayoral races.</p>
+</div>
+<div class="p-6 border border-outline-variant/30 rounded-lg bg-surface hover:bg-surface-container transition-colors">
+<h4 class="font-display-md text-xl text-on-surface mb-2">Panchayat Raj</h4>
+<p class="font-body-md text-sm text-on-surface-variant">Rural local governance with offline-first capabilities for remote polling stations.</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<!-- Footer -->
+<footer class="w-full border-t border-stone-800/50 mt-20 bg-stone-950/50 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-margin-page py-20">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
+            <!-- Brand Section -->
+            <div class="md:col-span-4 space-y-6">
+                <a href="{% url 'homepage' %}" class="flex items-center gap-2.5 text-2xl font-serif font-bold text-stone-50 tracking-tight">
+                    <img src="{% static 'power-icon.svg' %}" alt="" class="w-8 h-8 opacity-80"/>
+                    VoteSecure
+                </a>
+                <p class="text-stone-400 font-body-md text-sm leading-relaxed max-w-sm">
+                    A dead-simple, ECI-grade platform securing the lifecycle of India's digital democracy. Built for scale, transparency, and absolute integrity.
+                </p>
+                <div class="flex items-center gap-4 pt-2">
+                    <a href="https://github.com/anshdhariwal" target="_blank" class="w-10 h-10 rounded-full border border-stone-800 flex items-center justify-center text-stone-400 hover:text-primary hover:border-primary transition-all">
+                        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 496 512" height="1.2em" width="1.2em" xmlns="http://www.w3.org/2000/svg"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.5 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5.7 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-.7zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Links Sections -->
+            <div class="md:col-span-2 space-y-6">
+                <h4 class="font-label-caps text-label-caps text-stone-500 uppercase tracking-widest text-[10px]">Elections</h4>
+                <ul class="flex flex-col gap-4">
+                    <li><a href="{% url 'results' %}" class="text-sm text-stone-400 hover:text-primary transition-colors">Live Results</a></li>
+                    <li><a href="#" class="text-sm text-stone-400 hover:text-primary transition-colors">Voter Search</a></li>
+                    <li><a href="#" class="text-sm text-stone-400 hover:text-primary transition-colors">Candidate List</a></li>
+                </ul>
+            </div>
+
+            <div class="md:col-span-2 space-y-6">
+                <h4 class="font-label-caps text-label-caps text-stone-500 uppercase tracking-widest text-[10px]">Protocol</h4>
+                <ul class="flex flex-col gap-4">
+                    <li><a href="#" class="text-sm text-stone-400 hover:text-primary transition-colors">Privacy Guide</a></li>
+                    <li><a href="#" class="text-sm text-stone-400 hover:text-primary transition-colors">Audit Process</a></li>
+                    <li><a href="#" class="text-sm text-stone-400 hover:text-primary transition-colors">Security Whitepaper</a></li>
+                </ul>
+            </div>
+
+            <!-- India Badge Section -->
+            <div class="md:col-span-4 flex flex-col items-start md:items-end space-y-6">
+                <div class="inline-flex items-center gap-3 px-5 py-2.5 bg-stone-900/50 rounded-2xl border border-stone-800/50 group hover:border-primary/30 transition-all">
+                    <div class="flex flex-col items-end">
+                        <span class="text-[10px] font-label-caps text-stone-500 tracking-widest uppercase">Proudly built in</span>
+                        <span class="text-stone-300 font-serif font-bold text-sm">India</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 via-white to-green-600 p-[1px]">
+                        <div class="w-full h-full bg-stone-950 rounded-[11px] flex items-center justify-center text-xl">🇮🇳</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Bar -->
+        <div class="mt-20 pt-10 border-t border-stone-800/30 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-col gap-1 items-center md:items-start">
+                <p class="text-stone-500 font-body-md text-xl">© 2025 VoteSecure. All rights reserved.</p>
+                <p class="text-stone-600 font-body-md text-[12px] uppercase tracking-widest">Developed with precision by <a href="https://github.com/anshdhariwal" target="_blank" class="text-primary/70 hover:text-primary transition-colors">anshdhariwal</a></p>
+            </div>
+            <div class="flex items-center gap-8">
+                <a href="#" class="text-[10px] font-label-caps text-stone-500 hover:text-stone-300 transition-colors uppercase tracking-widest">Terms</a>
+                <a href="#" class="text-[10px] font-label-caps text-stone-500 hover:text-stone-300 transition-colors uppercase tracking-widest">Privacy</a>
+                <div class="flex items-center gap-2 px-3 py-1 bg-red-950/20 border border-red-900/30 rounded-full">
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                    <span class="text-[10px] font-label-caps text-red-400 uppercase tracking-widest">Demo Mode</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock %}

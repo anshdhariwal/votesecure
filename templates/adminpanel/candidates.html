@@ -1,0 +1,291 @@
+{% extends "adminpanel/base_admin.html" %}
+{% block title %}Candidates Manager — VoteSecure Admin{% endblock %}
+
+{% block admin_content %}
+<header class="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-surface-container-high px-gutter py-6 flex justify-between items-end">
+<div>
+    <p class="font-label-caps text-label-caps text-primary mb-2">BALLOT MANAGEMENT</p>
+    <h1 class="font-display-lg text-display-lg text-on-surface">Candidates Manager</h1>
+</div>
+<div class="flex items-center gap-4">
+    <button onclick="openCreateModal()" class="bg-primary text-on-primary px-6 py-2 rounded-full hover:bg-primary-fixed transition-colors font-body-md text-body-md flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">person_add</span> Add Candidate
+    </button>
+</div>
+</header>
+
+<!-- Filters -->
+<section class="px-gutter py-6 border-b border-surface-container-high bg-surface-container-lowest">
+<form method="GET" action="{% url 'admin_candidates' %}" class="flex gap-6 max-w-4xl">
+    <div class="flex-1">
+        <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">ELECTION</label>
+        <select name="election" onchange="this.form.submit()" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none appearance-none">
+            <option value="">All Elections</option>
+            {% for e in elections %}
+            <option value="{{ e.id }}" {% if selected_election == e.id|stringformat:"s" %}selected{% endif %}>{{ e.title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="flex-1">
+        <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">POSITION</label>
+        <select name="position" onchange="this.form.submit()" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none appearance-none">
+            <option value="">All Positions</option>
+            {% for p in positions %}
+            <option value="{{ p.id }}" {% if selected_position == p.id|stringformat:"s" %}selected{% endif %}>{{ p.title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+</section>
+
+<!-- Candidates Grid -->
+<section class="p-gutter max-w-[1500px] mx-auto w-full space-y-12">
+{% for group in grouped_candidates %}
+<div>
+    <!-- Position Header (Division) -->
+    <div class="flex items-center gap-4 mb-6">
+        <h2 class="font-display-md text-2xl text-primary font-bold">{{ group.position.title }}</h2>
+        <div class="h-px flex-1 bg-surface-container-highest"></div>
+        <span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-xs font-label-caps">{{ group.candidates.count }} CANDIDATES</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    {% for candidate in group.candidates %}
+    <div class="bg-surface-container-low hover:bg-surface-container transition-all duration-300 rounded-2xl border border-surface-container-highest overflow-hidden group relative flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-1">
+        <!-- Action Icons -->
+        <div class="absolute top-4 right-4 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+            <button type="button" onclick="openEditModal('{{ candidate.id }}', '{{ candidate.full_name|escapejs }}', '{{ candidate.party.id|default:'' }}', '{{ candidate.affiliation|escapejs }}', '{{ candidate.position.id }}', '{{ candidate.bio|escapejs }}', '{{ candidate.manifesto|escapejs }}')" class="bg-surface/90 backdrop-blur-md text-on-surface hover:bg-primary hover:text-on-primary p-2.5 rounded-xl shadow-lg transition-all">
+                <span class="material-symbols-outlined text-[18px]">edit</span>
+            </button>
+            <form method="POST" action="{% url 'admin_candidates' %}" onsubmit="return confirm('Remove this candidate?')">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="id" value="{{ candidate.id }}">
+                <button type="submit" class="bg-surface/90 backdrop-blur-md text-error hover:bg-error hover:text-on-error p-2.5 rounded-xl shadow-lg transition-all">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Image Section -->
+        <div class="h-60 w-full relative overflow-hidden bg-surface-dim">
+            {% if candidate.photo %}
+            <img alt="{{ candidate.full_name }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="{{ candidate.photo.url }}"/>
+            {% else %}
+            <div class="w-full h-full flex items-center justify-center bg-surface-container-highest">
+                <span class="material-symbols-outlined text-on-surface-variant text-7xl opacity-20">person</span>
+            </div>
+            {% endif %}
+            
+            <!-- Party Logo (Top Left) -->
+            {% if candidate.party and candidate.party.logo %}
+            <div class="absolute top-4 left-4 z-10 w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl p-2 border border-white/20 shadow-xl overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <img src="{{ candidate.party.logo.url }}" alt="{{ candidate.party.name }}" class="w-full h-full object-contain">
+            </div>
+            {% endif %}
+
+            <!-- Bottom Overlay -->
+            <div class="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
+                <span class="inline-block bg-primary text-on-primary px-2.5 py-1 rounded-md text-[10px] font-label-caps tracking-widest mb-2 shadow-sm">
+                    {{ candidate.party.name|default:candidate.affiliation|default:"INDEPENDENT"|upper }}
+                </span>
+                <h3 class="font-display-md text-2xl text-white leading-tight drop-shadow-md flex items-center gap-2">
+                    {{ candidate.full_name }}
+                    {% if candidate.is_winner %}
+                    <span class="text-yellow-400 drop-shadow-[0_0_10px_rgba(255,215,0,0.6)]" title="Election Winner">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5Z" fill="currentColor" stroke="#B8860B" stroke-width="0.5" stroke-linejoin="round"/>
+                            <path d="M5 18H19V19C19 19.5523 18.5523 20 18 20H6C5.44772 20 5 19.5523 5 19V18Z" fill="currentColor" stroke="#B8860B" stroke-width="0.5" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    {% endif %}
+                </h3>
+            </div>
+        </div>
+
+        <!-- Details Section -->
+        <div class="p-6 flex-1 flex flex-col justify-between">
+            <div class="space-y-4">
+                <div class="flex items-start gap-3">
+                    {% if candidate.is_winner %}
+                    <div class="mb-4 bg-yellow-400/10 border border-yellow-400/20 rounded-lg p-2 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-yellow-400 text-sm">stars</span>
+                        <span class="text-yellow-400 text-[10px] font-bold tracking-widest">OFFICIAL WINNER</span>
+                    </div>
+                    {% endif %}
+                    <div class="mt-1 w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-primary text-[18px]">badge</span>
+                    </div>
+                    <div>
+                        <p class="font-label-caps text-[10px] text-on-surface-variant tracking-wider uppercase">Contesting For</p>
+                        <p class="font-body-lg text-on-surface font-semibold leading-snug">{{ candidate.position.title }}</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-3">
+                    <div class="mt-1 w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-secondary text-[18px]">event_note</span>
+                    </div>
+                    <div>
+                        <p class="font-label-caps text-[10px] text-on-surface-variant tracking-wider uppercase">Election Event</p>
+                        <p class="font-body-md text-on-surface-variant text-sm line-clamp-1">{{ candidate.position.election.title }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {% if candidate.bio %}
+            <p class="mt-4 text-on-surface-variant text-sm line-clamp-2 italic font-body-md leading-relaxed opacity-70">
+                "{{ candidate.bio }}"
+            </p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+</div>
+{% empty %}
+<div class="col-span-full text-center py-20">
+    <div class="w-24 h-24 bg-surface-container-highest rounded-full flex items-center justify-center mx-auto mb-6">
+        <span class="material-symbols-outlined text-on-surface-variant text-5xl">person_off</span>
+    </div>
+    <h3 class="text-xl text-on-surface font-semibold">No candidates found</h3>
+    <p class="text-on-surface-variant mt-2 max-w-sm mx-auto">Try adjusting your filters or add a new candidate to get started.</p>
+</div>
+{% endfor %}
+</section>
+
+<!-- Create Candidate Modal -->
+<div id="create-candidate-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+<div class="bg-surface border border-surface-container-highest rounded-xl w-full max-w-2xl overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)] max-h-[90vh] overflow-y-auto">
+<form method="POST" action="{% url 'admin_candidates' %}" enctype="multipart/form-data">
+{% csrf_token %}
+<input type="hidden" name="action" value="create">
+<div class="p-8 border-b border-surface-container-highest flex justify-between items-center">
+    <h2 id="modal-title" class="font-display-md text-display-md text-on-surface">Add New Candidate</h2>
+    <button type="button" onclick="closeModal()" class="text-on-surface-variant hover:text-on-surface">
+        <span class="material-symbols-outlined">close</span>
+    </button>
+</div>
+<div class="p-8 space-y-6">
+    <div class="grid grid-cols-2 gap-6">
+        <div>
+            <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">FULL NAME</label>
+            <input type="text" name="full_name" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none" placeholder="e.g. Maya Patel" required>
+        </div>
+        <div>
+            <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">PARTY</label>
+            <select name="party" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none appearance-none">
+                <option value="">Independent / Other</option>
+                {% for party in parties %}
+                <option value="{{ party.id }}">{{ party.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div>
+        <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">OTHER AFFILIATION (OPTIONAL)</label>
+        <input type="text" name="affiliation" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none" placeholder="e.g. Local Coalition">
+    </div>
+    <div>
+        <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">POSITION</label>
+        <select name="position" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none appearance-none" required>
+            <option value="">Select Position</option>
+            {% for p in positions %}
+            <option value="{{ p.id }}">{{ p.election.title }} — {{ p.title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">PHOTO</label>
+        <input type="file" name="photo" accept="image/*" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md">
+    </div>
+    <div>
+        <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">BIOGRAPHY</label>
+        <textarea name="bio" rows="3" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none" placeholder="Short biography..."></textarea>
+    </div>
+    <div>
+        <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">MANIFESTO</label>
+        <textarea name="manifesto" rows="3" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none" placeholder="Campaign manifesto..."></textarea>
+    </div>
+    <div>
+        <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">KEY GOALS</label>
+        <div id="goals-container" class="space-y-2">
+            <input type="text" name="goals[]" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none" placeholder="Key campaign goal">
+        </div>
+        <button type="button" onclick="addGoalField()" class="mt-2 text-primary text-sm flex items-center gap-1 hover:text-primary-fixed transition-colors">
+            <span class="material-symbols-outlined text-[16px]">add</span> Add Goal
+        </button>
+    </div>
+    <div class="flex items-center gap-2">
+        <input type="checkbox" name="is_active" checked class="rounded border-surface-container-highest bg-surface-dim text-primary focus:ring-0">
+        <label class="text-on-surface text-sm">Active Candidate</label>
+    </div>
+</div>
+<div class="p-8 bg-surface-container-low border-t border-surface-container-highest flex justify-end gap-4">
+    <button type="button" onclick="closeModal()" class="px-6 py-2 rounded-full text-on-surface hover:bg-surface-container-high transition-colors font-body-md text-body-md">Cancel</button>
+    <button type="submit" id="modal-submit-btn" class="bg-primary text-on-primary px-6 py-2 rounded-full hover:bg-primary-fixed transition-colors font-body-md text-body-md">Save Candidate</button>
+</div>
+</form>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function addGoalField() {
+    const container = document.getElementById('goals-container');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'goals[]';
+    input.className = 'w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none mt-2';
+    input.placeholder = 'Campaign goal';
+    container.appendChild(input);
+}
+
+function openCreateModal() {
+    document.getElementById('modal-title').innerText = 'Add New Candidate';
+    document.querySelector('input[name="action"]').value = 'create';
+    document.querySelector('input[name="full_name"]').value = '';
+    document.querySelector('select[name="party"]').value = '';
+    document.querySelector('input[name="affiliation"]').value = '';
+    document.querySelector('select[name="position"]').value = '';
+    document.querySelector('textarea[name="bio"]').value = '';
+    document.querySelector('textarea[name="manifesto"]').value = '';
+    document.getElementById('modal-submit-btn').innerText = 'Save Candidate';
+    
+    let idField = document.getElementById('edit-candidate-id');
+    if (idField) idField.remove();
+    
+    document.getElementById('create-candidate-modal').classList.remove('hidden');
+}
+
+function openEditModal(id, fullName, partyId, affiliation, positionId, bio, manifesto) {
+    document.getElementById('modal-title').innerText = 'Edit Candidate';
+    document.querySelector('input[name="action"]').value = 'edit';
+    
+    let idField = document.getElementById('edit-candidate-id');
+    if (!idField) {
+        idField = document.createElement('input');
+        idField.type = 'hidden';
+        idField.name = 'id';
+        idField.id = 'edit-candidate-id';
+        document.querySelector('#create-candidate-modal form').appendChild(idField);
+    }
+    idField.value = id;
+
+    document.querySelector('input[name="full_name"]').value = fullName;
+    document.querySelector('select[name="party"]').value = partyId || '';
+    document.querySelector('input[name="affiliation"]').value = affiliation;
+    document.querySelector('select[name="position"]').value = positionId;
+    document.querySelector('textarea[name="bio"]').value = bio;
+    document.querySelector('textarea[name="manifesto"]').value = manifesto;
+    document.getElementById('modal-submit-btn').innerText = 'Update Candidate';
+    
+    document.getElementById('create-candidate-modal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('create-candidate-modal').classList.add('hidden');
+}
+</script>
+{% endblock %}

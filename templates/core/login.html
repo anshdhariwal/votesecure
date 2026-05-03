@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Login — VoteSecure India{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-background px-4">
+<div class="w-full max-w-md">
+<!-- Logo -->
+<div class="text-center mb-10">
+<a href="{% url 'homepage' %}" class="text-3xl font-serif font-bold text-on-surface tracking-tight">VoteSecure</a>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-2 uppercase tracking-widest">Secure Digital Voting</p>
+</div>
+
+<!-- Login Card -->
+<div class="bg-surface-container rounded-3xl p-card-padding border border-outline-variant/30 shadow-2xl shadow-black/50 relative">
+<a href="{% url 'homepage' %}" class="absolute top-4 right-4 md:top-6 md:right-6 text-on-surface-variant hover:text-on-surface transition-colors bg-surface-container-highest hover:bg-outline-variant/30 rounded-full p-1.5 flex items-center justify-center" aria-label="Close">
+    <span class="material-symbols-outlined text-[20px]">close</span>
+</a>
+<h2 class="font-display-md text-display-md text-on-surface mb-2">Welcome Back</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-8">Sign in to access your voter dashboard.</p>
+
+{% if form.errors %}
+<div class="bg-error-container/20 border border-error/30 text-on-error-container rounded-xl px-4 py-3 mb-6 text-sm">
+    Invalid email or password. Please try again.
+</div>
+{% endif %}
+
+<form method="POST" action="{% url 'login' %}" id="login-form">
+    {% csrf_token %}
+    <div class="space-y-6">
+        <div>
+            <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2 uppercase tracking-widest">EMAIL ADDRESS <span class="text-error">*</span></label>
+            <input type="email" name="email" value="{{ form.email.value|default:'' }}" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded-xl p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="you@example.com" required/>
+        </div>
+        <div>
+            <label class="font-label-caps text-label-caps text-on-surface-variant block mb-2 uppercase tracking-widest">PASSWORD <span class="text-error">*</span></label>
+            <div class="relative">
+                <input type="password" name="password" id="password-input" class="w-full bg-surface-dim border border-surface-container-highest text-on-surface rounded-xl p-3 pr-10 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="Enter your password" required/>
+                <button type="button" onclick="togglePassword('password-input', 'toggle-icon-1')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none" tabindex="-1">
+                    <span id="toggle-icon-1" class="material-symbols-outlined text-[20px]">visibility</span>
+                </button>
+            </div>
+        </div>
+        <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer">
+                <input type="checkbox" class="rounded border-surface-container-highest bg-surface-dim text-primary focus:ring-0"/>
+                Remember me
+            </label>
+            <a href="{% url 'forgot_password' %}" class="text-sm text-primary hover:text-primary-fixed transition-colors">Forgot Password?</a>
+        </div>
+        <button type="submit" class="w-full bg-primary text-on-primary font-body-md text-body-md py-4 rounded-full hover:opacity-90 transition-opacity font-semibold">
+            Sign In
+        </button>
+    </div>
+</form>
+
+<div class="mt-8 text-center">
+    <p class="text-sm text-on-surface-variant">Don't have an account?
+        <a href="{% url 'signup_step1' %}" class="text-primary hover:text-primary-fixed transition-colors font-semibold">Register to Vote</a>
+    </p>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePassword(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input.type === "password") {
+        input.type = "text";
+        icon.textContent = "visibility_off";
+    } else {
+        input.type = "password";
+        icon.textContent = "visibility";
+    }
+}
+</script>
+{% endblock %}

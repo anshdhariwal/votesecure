@@ -1,0 +1,37 @@
+<!-- Candidate Detail Modal -->
+<div id="candidate-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-surface border border-surface-container-highest rounded-xl w-full max-w-2xl overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)] max-h-[90vh] overflow-y-auto">
+        <div class="p-8 border-b border-surface-container-highest flex justify-between items-start">
+            <div class="flex items-center gap-6">
+                <div class="w-24 h-24 rounded-2xl overflow-hidden bg-surface-container-highest shrink-0 shadow-lg border border-surface-container-highest">
+                    <img id="modal-photo" src="" alt="" class="w-full h-full object-cover hidden"/>
+                    <div id="modal-photo-placeholder" class="w-full h-full flex items-center justify-center text-on-surface-variant">
+                        <span class="material-symbols-outlined text-4xl">person</span>
+                    </div>
+                </div>
+                <div>
+                    <div id="modal-affiliation" class="inline-block bg-primary/20 text-primary border border-primary/30 px-2 py-1 rounded text-[10px] font-label-caps tracking-widest mb-2"></div>
+                    <h2 id="modal-name" class="font-display-md text-display-md text-on-surface"></h2>
+                    <p id="modal-position" class="text-on-surface-variant text-sm mt-1"></p>
+                </div>
+            </div>
+            <button onclick="closeModal('candidate-modal')" class="text-on-surface-variant hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="p-8 space-y-6">
+            <div>
+                <h4 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest mb-3">BIOGRAPHY</h4>
+                <p id="modal-bio" class="font-body-md text-body-md text-on-surface"></p>
+            </div>
+            <div>
+                <h4 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest mb-3">MANIFESTO</h4>
+                <p id="modal-manifesto" class="font-body-md text-body-md text-on-surface"></p>
+            </div>
+            <div>
+                <h4 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest mb-3">KEY GOALS</h4>
+                <ul id="modal-goals" class="space-y-2"></ul>
+            </div>
+        </div>
+    </div>
+</div>

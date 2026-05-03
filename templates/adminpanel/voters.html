@@ -1,0 +1,79 @@
+{% extends "adminpanel/base_admin.html" %}
+{% block title %}Voter Rolls — VoteSecure Admin{% endblock %}
+
+{% block admin_content %}
+<header class="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-surface-container-high px-gutter py-6 flex justify-between items-end">
+<div>
+    <p class="font-label-caps text-label-caps text-primary mb-2">ROLL MANAGEMENT</p>
+    <h1 class="font-display-lg text-display-lg text-on-surface">Voter Rolls</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant mt-1">{{ total_voters }} registered voter{{ total_voters|pluralize }}</p>
+</div>
+<a href="{% url 'export_csv' %}" class="bg-surface-container-high text-on-surface px-6 py-2 rounded-full hover:bg-surface-variant transition-colors font-body-md text-body-md flex items-center gap-2">
+    <span class="material-symbols-outlined text-[18px]">download</span> Export CSV
+</a>
+</header>
+
+<div class="p-gutter max-w-[1400px] mx-auto w-full">
+<!-- Search -->
+<form method="GET" action="{% url 'admin_voters' %}" class="mb-8">
+<div class="flex gap-4 max-w-xl">
+    <input type="text" name="q" value="{{ q }}" class="flex-1 bg-surface-dim border border-surface-container-highest text-on-surface rounded p-3 font-body-md text-body-md focus:border-primary focus:ring-0 outline-none" placeholder="Search by name or email...">
+    <button type="submit" class="bg-primary text-on-primary px-6 py-3 rounded-full hover:opacity-90 transition-opacity font-body-md text-body-md">Search</button>
+</div>
+</form>
+
+<!-- Voters Table -->
+<div class="bg-[#252320] rounded border border-[#faf9f5]/10">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-surface-container-high">
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Name</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Email</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Age</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Gender</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Phone</th>
+<th class="py-4 px-4 font-label-caps text-label-caps text-on-surface-variant font-normal">Registered</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-background divide-y divide-surface-container-high">
+{% for voter in voters %}
+<tr class="hover:bg-surface-container/50 transition-colors">
+<td class="py-4 px-4">
+    <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0">
+            <span class="text-on-surface-variant text-xs font-semibold">{{ voter.first_name.0 }}{{ voter.last_name.0 }}</span>
+        </div>
+        <span class="font-semibold">{{ voter.first_name }} {{ voter.last_name }}</span>
+    </div>
+</td>
+<td class="py-4 px-4 text-on-surface-variant">{{ voter.email }}</td>
+<td class="py-4 px-4">{{ voter.age }}</td>
+<td class="py-4 px-4 text-on-surface-variant">{{ voter.gender }}</td>
+<td class="py-4 px-4 text-on-surface-variant">{{ voter.phone|default:"—" }}</td>
+<td class="py-4 px-4 text-on-surface-variant">{{ voter.date_joined|date:"d M Y" }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="6" class="py-8 text-center text-on-surface-variant">No voters found.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+<!-- Pagination -->
+{% if voters.has_other_pages %}
+<div class="flex items-center justify-between px-6 py-4 border-t border-surface-container-high">
+<p class="text-on-surface-variant text-sm">Page {{ voters.number }} of {{ voters.paginator.num_pages }}</p>
+<div class="flex gap-2">
+    {% if voters.has_previous %}
+    <a href="?page={{ voters.previous_page_number }}&q={{ q }}" class="bg-surface-container text-on-surface px-4 py-2 rounded-full text-sm hover:bg-surface-container-high transition-colors">Previous</a>
+    {% endif %}
+    {% if voters.has_next %}
+    <a href="?page={{ voters.next_page_number }}&q={{ q }}" class="bg-surface-container text-on-surface px-4 py-2 rounded-full text-sm hover:bg-surface-container-high transition-colors">Next</a>
+    {% endif %}
+</div>
+</div>
+{% endif %}
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,256 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="dark" lang="en" style="zoom: 0.9;">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% block title %}VoteSecure India{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}India votes. Democracy, fixed. Secure, real-time results for the world's largest democracy.{% endblock %}">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Newsreader:opsz,wght@6..72,400;6..72,700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Custom Scrollbar matching the theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #373431; /* surface-container-highest */
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #54433e; /* outline-variant */
+        }
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #373431 transparent;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-secondary-fixed-variant": "#464744",
+                "on-secondary-fixed": "#1b1c1a",
+                "secondary-fixed": "#e3e2df",
+                "on-error-container": "#ffdad6",
+                "outline": "#a28c86",
+                "background": "#151310",
+                "outline-variant": "#54433e",
+                "on-tertiary-fixed-variant": "#484644",
+                "surface-bright": "#3b3935",
+                "primary-fixed": "#ffdbd0",
+                "on-tertiary-fixed": "#1c1b19",
+                "on-surface": "#e7e1dc",
+                "inverse-primary": "#924a31",
+                "surface-dim": "#151310",
+                "surface-container-high": "#2c2a27",
+                "on-primary-fixed-variant": "#75331c",
+                "error-container": "#93000a",
+                "on-primary-fixed": "#390c00",
+                "inverse-surface": "#e7e1dc",
+                "surface-tint": "#ffb59d",
+                "primary-fixed-dim": "#ffb59d",
+                "on-background": "#e7e1dc",
+                "surface-container-highest": "#373431",
+                "surface": "#151310",
+                "surface-container": "#211f1c",
+                "secondary-fixed-dim": "#c7c7c3",
+                "on-surface-variant": "#dac1ba",
+                "primary": "#ffb59d",
+                "on-error": "#690005",
+                "surface-container-low": "#1d1b18",
+                "tertiary-fixed-dim": "#cac6c2",
+                "on-tertiary-container": "#2b2927",
+                "on-secondary-container": "#b5b5b2",
+                "on-primary-container": "#4f1704",
+                "on-tertiary": "#32302e",
+                "tertiary-container": "#93908d",
+                "secondary-container": "#464744",
+                "primary-container": "#cf7a5e",
+                "tertiary-fixed": "#e6e2de",
+                "surface-variant": "#373431",
+                "secondary": "#c7c7c3",
+                "on-secondary": "#2f312e",
+                "on-primary": "#581e08",
+                "surface-container-lowest": "#0f0e0b",
+                "inverse-on-surface": "#32302d",
+                "tertiary": "#cac6c2",
+                "error": "#ffb4ab"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "card-padding": "32px",
+                "section-gap": "80px",
+                "gutter": "24px",
+                "unit": "4px",
+                "margin-page": "48px"
+            },
+            "fontFamily": {
+                "body-md": ["Inter"],
+                "display-xl": ["Newsreader"],
+                "display-md": ["Newsreader"],
+                "display-lg": ["Newsreader"],
+                "label-caps": ["Inter"],
+                "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                "display-xl": ["64px", {"lineHeight": "1.05", "letterSpacing": "-0.02em", "fontWeight": "400"}],
+                "display-md": ["36px", {"lineHeight": "1.15", "letterSpacing": "-0.01em", "fontWeight": "400"}],
+                "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.015em", "fontWeight": "400"}],
+                "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        .demo-banner {
+            background: linear-gradient(90deg, #93000a 0%, #cf2e2e 50%, #93000a 100%);
+            color: #ffdad6;
+            text-align: center;
+            padding: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .watermark-badge {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(33, 31, 28, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(84, 67, 62, 0.5);
+            color: #dac1ba;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 9998;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .watermark-badge:hover {
+            background: #ffb59d;
+            color: #581e08;
+            transform: translateY(-4px) scale(1.02);
+            border-color: #ffb59d;
+        }
+        .watermark-icon {
+            font-size: 16px;
+        }
+        body {
+            padding-top: 36px; /* Offset for banner */
+        }
+        nav.fixed.top-0, nav.fixed.inset-y-0 {
+            top: 36px !important;
+        }
+        #toast-container {
+            top: 60px !important;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md text-body-md">
+    <!-- Demo Disclaimer Banner -->
+    <div class="demo-banner">
+        <span class="material-symbols-outlined text-[18px]">warning</span>
+        <span>DEMO PURPOSES ONLY: This platform is not for real elections. Data is simulated.</span>
+        <span class="material-symbols-outlined text-[18px]">warning</span>
+    </div>
+
+    <!-- Global Watermark -->
+    <a href="https://github.com/anshdhariwal" target="_blank" rel="noopener noreferrer" class="watermark-badge">
+        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 640 512" class="watermark-icon" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+            <path d="M278.9 511.5l-61-17.7c-6.4-1.8-10-8.5-8.2-14.9L346.2 8.7c1.8-6.4 8.5-10 14.9-8.2l61 17.7c6.4 1.8 10 8.5 8.2 14.9L293.8 503.3c-1.9 6.4-8.5 10.1-14.9 8.2zm-114-112.2l43.5-46.4c4.6-4.9 4.3-12.7-.8-17.2L117 256l90.6-79.7c5.1-4.5 5.5-12.3.8-17.2l-43.5-46.4c-4.5-4.8-12.1-5.1-17-.5L3.8 247.2c-5.1 4.7-5.1 12.8 0 17.5l144.1 135.1c4.9 4.6 12.5 4.4 17-.5zm327.2.6l144.1-135.1c5.1-4.7 5.1-12.8 0-17.5L492.1 112.1c-4.8-4.5-12.4-4.3-17 .5L431.6 159c-4.6 4.9-4.3 12.7.8 17.2L523 256l-90.6 79.7c-5.1 4.5-5.5-12.3-.8-17.2l43.5-46.4c4.5-4.8 12.1-5.1 17-.5l144.1 135.1c5.1 4.7 5.1 12.8 0 17.5z"></path>
+        </svg>
+        <span>Dev @anshdhariwal</span>
+    </a>
+    <!-- Toast Messages -->
+    {% if messages %}
+    <div id="toast-container" class="fixed top-6 right-6 z-[200] flex flex-col gap-3">
+        {% for message in messages %}
+        <div class="toast-item bg-surface-container-high border border-surface-container-highest text-on-surface px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 animate-slide-in max-w-sm" data-tags="{{ message.tags }}">
+            {% if message.tags == 'success' %}
+            <span class="material-symbols-outlined text-green-400">check_circle</span>
+            {% elif message.tags == 'error' %}
+            <span class="material-symbols-outlined text-error">error</span>
+            {% elif message.tags == 'info' %}
+            <span class="material-symbols-outlined text-primary">info</span>
+            {% else %}
+            <span class="material-symbols-outlined text-secondary">notifications</span>
+            {% endif %}
+            <span class="font-body-md text-sm">{{ message }}</span>
+            <button onclick="this.parentElement.remove()" class="ml-auto text-on-surface-variant hover:text-on-surface">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    <style>
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .animate-slide-in { animation: slideIn 0.3s ease-out; }
+    </style>
+    <script>
+        setTimeout(() => {
+            document.querySelectorAll('.toast-item').forEach(t => {
+                t.style.transition = 'opacity 0.5s, transform 0.5s';
+                t.style.opacity = '0';
+                t.style.transform = 'translateX(100%)';
+                setTimeout(() => t.remove(), 500);
+            });
+        }, 5000);
+    </script>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
