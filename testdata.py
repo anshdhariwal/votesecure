@@ -38,6 +38,8 @@ def populate():
         ('BJP', 'parties/bjp.png'),
         ('INC', 'parties/inc.webp'),
         ('AAP', 'parties/aap.png'),
+        ('CPM', 'parties/cpm.webp'),
+        ('NPP', 'parties/npp.webp'),
     ]
     
     party_objs = {}
@@ -47,7 +49,7 @@ def populate():
             p.logo = logo
             p.save()
         party_objs[name] = p
-    print("Parties verified and logos updated: BJP, INC, AAP")
+    print("Parties verified and logos updated: BJP, INC, AAP, CPM, NPP")
 
     # 4. Party Mappings (Manual Mapping for Accuracy)
     party_map = {
